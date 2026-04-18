@@ -1000,7 +1000,7 @@ st.markdown(
         position: absolute;
         top: 35px;
         right: 0;
-        width: 320px;
+        width: min(320px, calc(100vw - 32px));
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(15px);
         border: 1px solid rgba(10, 18, 97, 0.15);
@@ -1040,6 +1040,166 @@ st.markdown(
         font-size: 18px;
         color: #94a3b8;
         cursor: pointer;
+    }
+    @media (max-width: 992px) {
+        .block-container {
+            padding-top: 1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .header-band {
+            padding: 20px 22px;
+            min-height: auto;
+            border-radius: 18px;
+        }
+        .chart-title-row,
+        .chart-control-row {
+            min-height: auto;
+        }
+        .metric-row-gap {
+            height: 1rem;
+        }
+        .capsule-content {
+            right: auto;
+            left: 0;
+        }
+        [data-testid="stSidebar"] {
+            min-width: min(92vw, 360px) !important;
+            max-width: min(92vw, 360px) !important;
+        }
+        [data-testid="stSidebar"] .stButton > button,
+        [data-testid="stSidebar"] [data-testid="stFormSubmitButton"] button {
+            min-height: 3rem;
+            white-space: normal;
+        }
+    }
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 0.75rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        [data-testid="stMainBlockContainer"] {
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            gap: 0.75rem !important;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+        .header-band {
+            padding: 18px 18px;
+            font-size: clamp(1.35rem, 6vw, 1.8rem);
+            border-left-width: 5px;
+            margin-bottom: 18px;
+        }
+        .section-title,
+        .chart-section-title,
+        .minor-band-title {
+            font-size: clamp(1.1rem, 5vw, 1.35rem);
+            line-height: 1.2;
+        }
+        .metric-card,
+        .flip-card-wrapper,
+        .flip-card-front,
+        .flip-card-back {
+            height: auto;
+            min-height: 152px;
+        }
+        .metric-card,
+        .flip-card-back {
+            padding: 18px 16px;
+        }
+        .metric-title {
+            min-height: auto;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+        }
+        .metric-value {
+            font-size: clamp(1.7rem, 8vw, 2.3rem);
+            min-height: auto;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: center;
+        }
+        .metric-meta,
+        .metric-delta,
+        .metric-explanation,
+        .flip-card-back-desc,
+        .capsule-text {
+            font-size: 12px;
+        }
+        [data-testid="stPlotlyChart"] {
+            border-radius: 18px;
+            padding: 10px 10px 2px;
+        }
+        [data-testid="stPlotlyChart"] .modebar {
+            display: none !important;
+        }
+        .breakdown-table,
+        .eerr-table {
+            font-size: 0.82rem;
+        }
+        .breakdown-table thead th,
+        .breakdown-table tbody td,
+        .eerr-table thead th,
+        .eerr-table tbody td {
+            padding: 0.7rem 0.65rem;
+        }
+        .eerr-report-shell {
+            padding: 1rem;
+            border-radius: 18px;
+        }
+        [data-testid="stExpander"] summary p,
+        [data-testid="stExpander"] summary span {
+            font-size: 0.95rem !important;
+        }
+        [data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] > div,
+        [data-testid="stSidebar"] .stDateInput [data-baseweb="input"],
+        [data-testid="stSidebar"] .stDateInput [data-baseweb="base-input"] {
+            min-height: 2.85rem;
+        }
+    }
+    @media (max-width: 480px) {
+        .block-container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        .header-band {
+            padding: 16px 14px;
+            border-radius: 16px;
+        }
+        .chart-section-title,
+        .section-title {
+            font-size: 1.05rem;
+        }
+        .metric-card,
+        .flip-card-back {
+            padding: 16px 14px;
+            border-radius: 14px;
+        }
+        .metric-help {
+            top: 10px;
+            right: 10px;
+        }
+        .metric-help::after {
+            width: min(220px, calc(100vw - 48px));
+            right: -4px;
+        }
+        .capsule-content {
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%) translateY(-10px);
+        }
+        .capsule-checkbox:checked ~ .capsule-content {
+            transform: translateX(-50%) translateY(0);
+        }
+        .capsule-btn:hover::before {
+            display: none;
+        }
     }
     </style>
     """,
