@@ -13,6 +13,7 @@ st.set_page_config(
     page_title="Panel de Interwins",
     page_icon="📊",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 # --- CSS Estándar (Compartido por todas las slides) ---
@@ -1064,24 +1065,30 @@ st.markdown(
             left: 0;
         }
         [data-testid="stSidebar"] {
-            min-width: min(92vw, 360px) !important;
-            max-width: min(92vw, 360px) !important;
+            min-width: min(82vw, 320px) !important;
+            max-width: min(82vw, 320px) !important;
         }
         [data-testid="stSidebar"] .stButton > button,
         [data-testid="stSidebar"] [data-testid="stFormSubmitButton"] button {
             min-height: 3rem;
             white-space: normal;
         }
+        [data-testid="collapsedControl"] {
+            position: sticky;
+            top: 0.75rem;
+            left: 0.5rem;
+            z-index: 1001;
+        }
     }
     @media (max-width: 768px) {
         .block-container {
             padding-top: 0.75rem;
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            padding-left: 0.9rem;
+            padding-right: 0.9rem;
         }
         [data-testid="stMainBlockContainer"] {
-            padding-left: 0.25rem !important;
-            padding-right: 0.25rem !important;
+            padding-left: 0.45rem !important;
+            padding-right: 0.45rem !important;
         }
         div[data-testid="stHorizontalBlock"] {
             gap: 0.75rem !important;
@@ -1134,10 +1141,17 @@ st.markdown(
         }
         [data-testid="stPlotlyChart"] {
             border-radius: 18px;
-            padding: 10px 10px 2px;
+            padding: 12px 12px 4px;
         }
         [data-testid="stPlotlyChart"] .modebar {
             display: none !important;
+        }
+        [data-testid="stSidebar"] {
+            min-width: 78vw !important;
+            max-width: 78vw !important;
+        }
+        [data-testid="stSidebarContent"] {
+            padding-top: 0.25rem;
         }
         .breakdown-table,
         .eerr-table {
@@ -1165,8 +1179,8 @@ st.markdown(
     }
     @media (max-width: 480px) {
         .block-container {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
         }
         .header-band {
             padding: 16px 14px;
@@ -1199,6 +1213,10 @@ st.markdown(
         }
         .capsule-btn:hover::before {
             display: none;
+        }
+        [data-testid="stSidebar"] {
+            min-width: 76vw !important;
+            max-width: 76vw !important;
         }
     }
     </style>
