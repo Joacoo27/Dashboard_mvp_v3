@@ -2,6 +2,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import html
 import pandas as pd
+from core.charts import chart_config, get_template
 from .logic import get_comercial_kpis, build_commercial_trends
 from .ui_helpers import render_header, render_metric_card, render_info_capsule
 
@@ -93,14 +94,14 @@ def render(df):
         ))
 
         fig.update_layout(
-            template="plotly_white", height=420,
+            template=get_template(), height=420,
             margin=dict(l=10, r=10, t=20, b=10),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
             hovermode="x unified",
             xaxis=dict(showgrid=False),
             yaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
         )
-        st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
+        st.plotly_chart(fig, use_container_width=True, theme=None, config=chart_config())
 
     # Sección Inferior: Análisis por Dimensión
     st.markdown("<br>", unsafe_allow_html=True)
@@ -117,8 +118,8 @@ def render(df):
             x=cat_data['monto_real'], y=cat_data['categoria_producto'],
             orientation='h', marker_color='#1e293b'
         ))
-        fig_cat.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template="plotly_white")
-        st.plotly_chart(fig_cat, use_container_width=True, theme=None)
+        fig_cat.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template=get_template())
+        st.plotly_chart(fig_cat, use_container_width=True, theme=None, config=chart_config())
 
     with r_col:
         render_info_capsule(
@@ -131,5 +132,5 @@ def render(df):
             x=vend_data['monto_real'], y=vend_data['vendedor_nombre'],
             orientation='h', marker_color='#2bb673'
         ))
-        fig_vend.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template="plotly_white")
-        st.plotly_chart(fig_vend, use_container_width=True, theme=None)
+        fig_vend.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template=get_template())
+        st.plotly_chart(fig_vend, use_container_width=True, theme=None, config=chart_config())

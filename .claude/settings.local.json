@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(streamlit run *)",
+      "Bash(python -m streamlit run app.py --server.port 8504 --server.headless true --browser.gatherUsageStats false)",
+      "Bash(python -c \"from core.components import render_metric_card, render_header, render_pills, render_info_capsule; print\\('components OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('app.py'\\).read\\(\\)\\); print\\('app.py syntax OK'\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8504/healthz)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8504)",
+      "Bash(pkill -f \"streamlit run app.py\")"
+    ]
+  }
+}

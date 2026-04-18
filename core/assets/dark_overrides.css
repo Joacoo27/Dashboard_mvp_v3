@@ -1,0 +1,101 @@
+/* ============================================================
+   Interwins Design System — dark_overrides.css
+   Injected on top of components.css when dark mode is active.
+   Overrides variables and targeted selectors that can't adapt
+   via CSS variables alone (Streamlit internal backgrounds, etc.)
+   ============================================================ */
+
+/* --- Variable overrides for dark mode --- */
+:root {
+    --iw-ink:           #eef1f7;
+    --iw-bg:            #1b1d2a;
+    --iw-panel-bg:      rgba(34,36,51,0.85);
+    --iw-surface:       rgba(42,45,62,0.92);
+    --iw-surface-solid: #2a2d3e;
+    --iw-surface-soft:  rgba(42,45,62,0.55);
+    --iw-surface-alt:   #2d3048;
+    --iw-surface-alt-2: #262839;
+    --iw-surface-alt-3: #1f2230;
+    --iw-border-hair:   rgba(255,255,255,0.06);
+    --iw-border-soft:   rgba(167,194,255,0.14);
+    --iw-border-strong: rgba(122,168,255,0.45);
+    --iw-shadow-card:   0 8px 32px rgba(0,0,0,0.40);
+    --iw-shadow-soft:   0 10px 30px rgba(0,0,0,0.35);
+    --iw-shadow-strong: 0 18px 38px rgba(0,0,0,0.48);
+    --iw-shadow-lift:   0 16px 40px rgba(0,0,0,0.42);
+    --iw-shadow-band:   0 10px 30px rgba(0,0,0,0.48);
+    --iw-shadow-navy:   0 16px 34px rgba(122,168,255,0.18);
+    --iw-focus-ring:    0 0 0 3px rgba(122,168,255,0.25);
+    --iw-slate-900: #f3f4f9;
+    --iw-slate-800: #dfe2ec;
+    --iw-slate-700: #c3c8d6;
+    --iw-slate-600: #a4aab9;
+    --iw-slate-500: #8d93a4;
+    --iw-slate-400: #6c7283;
+    --iw-slate-300: #4a4f60;
+    --iw-slate-200: #363a4b;
+    --iw-slate-100: #2a2d3e;
+    --iw-app-bg:
+        radial-gradient(circle at top left,  rgba(122,168,255,0.10), transparent 30%),
+        radial-gradient(circle at top right, rgba(167,194,255,0.06), transparent 25%),
+        #1b1d2a;
+}
+
+/* --- Streamlit internal backgrounds --- */
+[data-testid="stHeader"] {
+    background: rgba(27,29,42,0.94) !important;
+    border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+[data-testid="stHeader"] * { color: #eef1f7 !important; }
+
+/* --- Main buttons in dark mode (secondary) --- */
+[data-testid="stMain"] .stButton > button[kind="secondary"] {
+    background: rgba(42,45,62,0.95) !important;
+    color: #eef1f7 !important;
+    border-color: rgba(167,194,255,0.20) !important;
+}
+[data-testid="stMain"] .stButton > button[kind="secondary"]:hover {
+    background: rgba(55,58,78,0.95) !important;
+    border-color: rgba(122,168,255,0.40) !important;
+}
+
+/* --- Radio buttons in main area --- */
+[data-testid="stMain"] [data-testid="stRadio"] label[data-baseweb="radio"] {
+    background: rgba(42,45,62,0.85);
+    border-color: rgba(167,194,255,0.14);
+}
+[data-testid="stMain"] [data-testid="stRadio"] label[data-baseweb="radio"] p { color: #eef1f7 !important; }
+
+/* --- Breakdown table zebra stripes --- */
+.breakdown-table tbody tr:nth-child(even) { background: rgba(42,46,73,0.4); }
+.breakdown-table thead th { color: #dbe2ff; }
+
+/* --- EE.RR title & table header (navy stays, subtotals adjust) --- */
+.eerr-title { color: #dbe2ff !important; }
+.eerr-subtitle { color: #8d93a4 !important; }
+.eerr-table thead th { color: #a4aab9; }
+.eerr-table tbody tr:nth-child(even) { background: rgba(42,46,73,0.35); }
+.eerr-subtotal td { color: #dbe2ff !important; }
+
+/* --- Plotly modebar on dark --- */
+[data-testid="stPlotlyChart"] .modebar { background: rgba(42,45,62,0.9) !important; }
+[data-testid="stPlotlyChart"] .modebar-btn path,
+[data-testid="stPlotlyChart"] .modebar-btn svg { fill: #eef1f7 !important; }
+
+/* --- Expander details --- */
+[data-testid="stExpanderDetails"] code {
+    background: rgba(122,168,255,0.10) !important;
+    color: #a7c2ff !important;
+    border-color: rgba(122,168,255,0.18) !important;
+}
+
+/* --- Capsule content on dark --- */
+.capsule-title { color: #dbe2ff; }
+
+/* --- iframe cards in dark mode: update body background --- */
+[data-testid="stCustomComponentV1"] > iframe {
+    background: transparent !important;
+}
+
+/* --- Slider tick labels --- */
+[data-testid="stSliderTickBar"] p { color: #6c7283 !important; }

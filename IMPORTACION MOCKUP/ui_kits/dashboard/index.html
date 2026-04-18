@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interwins · Dashboard Ejecutivo</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  body { margin:0; background: var(--iw-app-bg); font-family: var(--iw-font-sans); color: var(--iw-ink); }
+  @keyframes iwPulseBlue {
+    0%   { box-shadow: 0 0 0 0 rgba(96,165,250,.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(96,165,250,0); }
+    100% { box-shadow: 0 0 0 0 rgba(96,165,250,0); }
+  }
+  .iw-layout { display:flex; min-height:100vh; }
+  .iw-main { flex:1; padding: 16px 20px 32px; max-width: 1440px; }
+  .iw-kicker { color: var(--iw-slate-500); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .iw-section-title { color:#111827; font-size:18px; font-weight:800; margin: 16px 0 10px; letter-spacing:-0.01em; }
+  .iw-grid-4 { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .iw-grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .iw-divider { width:100%; height:1px; background: linear-gradient(90deg, rgba(20,35,59,0.03), rgba(20,35,59,0.24), rgba(20,35,59,0.03)); margin: 16px 0 4px; }
+
+  /* ==== Hovers vivos — Sidebar ==== */
+  [data-iw="module-btn"] { transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease !important; }
+  [data-iw="module-btn"]:hover { background: rgba(96,165,250,.18) !important; border-color: rgba(96,165,250,.4) !important; transform: translateX(3px); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+  [data-iw="module-btn"][data-on="1"]:hover { background: linear-gradient(180deg, rgba(59,130,246,.55), rgba(30,58,138,.6)) !important; transform: translateX(3px); }
+
+  [data-iw="chip"] { transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease !important; }
+  [data-iw="chip"]:hover { background: rgba(96,165,250,.28) !important; border-color: rgba(96,165,250,.6) !important; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.22); }
+  [data-iw="chip"]:active { transform: translateY(0) scale(.97); }
+
+  [data-iw="light-btn"] { transition: transform .15s ease, background .15s ease, box-shadow .15s ease !important; }
+  [data-iw="light-btn"]:hover { background: linear-gradient(180deg, #fff, #dbeafe) !important; transform: translateY(-1px); box-shadow: 0 14px 26px rgba(10,18,97,.22) !important; }
+  [data-iw="light-btn"]:active { transform: translateY(0) scale(.98); }
+
+  [data-iw="select-field"] { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease !important; cursor: pointer; }
+  [data-iw="select-field"]:hover { border-color: rgba(96,165,250,.55) !important; transform: translateY(-1px); box-shadow: 0 14px 26px rgba(10,18,97,.18) !important; }
+
+  [data-iw="collapse"] { transition: transform .2s ease, background .2s ease, box-shadow .2s ease !important; }
+  [data-iw="collapse"]:hover { background: #0A1261 !important; color: #fff !important; transform: scale(1.15); box-shadow: 0 8px 20px rgba(10,18,97,.4) !important; }
+
+  [data-iw="slider-thumb"] { transition: transform .15s ease, box-shadow .15s ease !important; cursor: grab; }
+  [data-iw="slider-thumb"]:hover { transform: scale(1.18); box-shadow: 0 12px 28px rgba(59,130,246,.5) !important; }
+  [data-iw="slider-thumb"]:active { cursor: grabbing; transform: scale(1.1); }
+
+  /* ==== Hovers — Main canvas ==== */
+  [data-iw="kpi-card"] { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important; }
+  [data-iw="kpi-card"]:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(10,18,97,.14) !important; border-color: rgba(59,130,246,.3) !important; }
+
+  /* Flip cards manage their own transform via React — isolate them */
+  [data-iw="flip-card"] { transition: box-shadow .2s ease !important; }
+  [data-iw="flip-card"]:hover { box-shadow: 0 22px 44px rgba(10,18,97,.18) !important; }
+  [data-iw="flip-card"]:hover [data-iw="flip-hint"] { color: #0A1261 !important; font-weight: 800 !important; }
+
+  [data-iw="tab-btn"] { transition: transform .18s ease, background .18s ease, box-shadow .18s ease !important; }
+  [data-iw="tab-btn"]:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(10,18,97,.18) !important; }
+  [data-iw="tab-btn"][data-on="0"]:hover { background: #eef2ff !important; border-color: rgba(10,18,97,.25) !important; }
+
+  [data-iw="chart-info"] { transition: transform .18s ease, background .18s ease, box-shadow .18s ease !important; }
+  [data-iw="chart-info"]:hover { transform: scale(1.18) rotate(8deg); background: #1e3a8a !important; box-shadow: 0 10px 22px rgba(10,18,97,.45) !important; }
+
+  .iw-table tbody tr { transition: background .15s ease; }
+  .iw-table tbody tr:hover { background: rgba(59,130,246,.08) !important; }
+  .iw-table-wrap { background: rgba(255,255,255,.96); border:1px solid rgba(20,35,59,.08); border-radius:18px; box-shadow:0 14px 34px rgba(20,35,59,.06); overflow:hidden; }
+  .iw-table { width:100%; border-collapse:collapse; font-size:13.5px; color:#14233b; }
+  .iw-table thead th { background:#eef2ff; color:#0A1261; text-align:left; font-weight:800; padding:12px 16px; border-bottom:1px solid rgba(20,35,59,.1); }
+  .iw-table tbody td { padding:11px 16px; border-bottom:1px solid rgba(20,35,59,.06); font-weight:600; }
+  .iw-table tbody tr:nth-child(even) { background: rgba(238,242,255,.45); }
+  .iw-table td:not(:first-child), .iw-table th:not(:first-child) { text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
+
+  /* ==== DARK MODE OVERRIDES — dashboard surfaces + inline-styled components ==== */
+  [data-theme="dark"] body { background: var(--iw-app-bg); }
+
+  /* Cards & chart containers */
+  [data-theme="dark"] [data-iw="kpi-card"],
+  [data-theme="dark"] [data-iw="flip-card"] > div > div:first-child {
+    background: linear-gradient(180deg, rgba(46,50,70,.92), rgba(34,37,54,.92)) !important;
+    border-color: rgba(167,194,255,.12) !important;
+    color: var(--iw-ink) !important;
+  }
+  [data-theme="dark"] [data-iw="kpi-card"] > div:nth-child(2),
+  [data-theme="dark"] [data-iw="flip-card"] [data-flip-value] {
+    color: var(--iw-ink) !important;
+  }
+
+  /* Chart panel container */
+  [data-theme="dark"] [data-iw="chart-container"] {
+    background: linear-gradient(180deg, rgba(46,50,70,.92), rgba(34,37,54,.9)) !important;
+    border-color: rgba(167,194,255,.12) !important;
+  }
+  [data-theme="dark"] [data-iw="chart-title"] { color: var(--iw-slate-800) !important; }
+
+  /* Chart SVG strokes/fills for axes & gridlines */
+  [data-theme="dark"] [data-iw="chart-container"] svg line[stroke="#e2e8f0"] { stroke: rgba(167,194,255,.12) !important; }
+  [data-theme="dark"] [data-iw="chart-container"] svg text[fill="#64748b"],
+  [data-theme="dark"] [data-iw="chart-container"] svg text[fill="#14233b"] { fill: var(--iw-slate-700) !important; }
+  [data-theme="dark"] [data-iw="chart-container"] svg text[fill="#0A1261"] { fill: var(--iw-accent) !important; }
+
+  /* Table */
+  [data-theme="dark"] .iw-table-wrap { background: rgba(42,45,62,.92); border-color: rgba(167,194,255,.12); box-shadow: 0 14px 34px rgba(0,0,0,.45); }
+  [data-theme="dark"] .iw-table { color: var(--iw-ink); }
+  [data-theme="dark"] .iw-table thead th { background: #2d3048; color: var(--iw-accent-soft); border-bottom-color: rgba(167,194,255,.18); }
+  [data-theme="dark"] .iw-table tbody td { border-bottom-color: rgba(255,255,255,.05); color: var(--iw-ink); }
+  [data-theme="dark"] .iw-table tbody tr:nth-child(even) { background: rgba(122,168,255,.05); }
+  [data-theme="dark"] .iw-table tbody tr:hover { background: rgba(122,168,255,.1) !important; }
+
+  /* EE.RR: primera columna "Cuenta" tiene colores inline — forzar claros en dark */
+  [data-theme="dark"] .iw-table tbody td:first-child {
+    color: #eef1f7 !important;
+  }
+  /* Fila "Utilidad Neta" (row.total) tiene color #0A1261 inline + border-top navy */
+  [data-theme="dark"] .iw-table tbody td[style*="#0A1261"] {
+    color: var(--iw-accent-soft) !important;
+    border-top-color: var(--iw-accent-soft) !important;
+  }
+  /* Columna Presupuesto (color:#6b7280 inline) — sube un poco en dark */
+  [data-theme="dark"] .iw-table tbody td[style*="#6b7280"] {
+    color: var(--iw-slate-500) !important;
+  }
+  /* Filas highlighted (background navy translúcido) — subir contraste en dark */
+  [data-theme="dark"] .iw-table tbody tr[style*="rgba(10,18,97"] {
+    background: rgba(122,168,255,.06) !important;
+  }
+  [data-theme="dark"] .iw-table tbody tr[style*="rgba(10,18,97"]:hover {
+    background: rgba(122,168,255,.14) !important;
+  }
+
+  /* Section titles */
+  [data-theme="dark"] .iw-section-title { color: var(--iw-slate-800); }
+  [data-theme="dark"] .iw-kicker { color: var(--iw-slate-500); }
+  [data-theme="dark"] .iw-divider { background: linear-gradient(90deg, rgba(167,194,255,.06), rgba(167,194,255,.2), rgba(167,194,255,.06)); }
+
+  /* HeaderBand — keep navy but add subtle border in dark */
+  [data-theme="dark"] [data-iw="header-band"] { background: linear-gradient(180deg, #1a2470, #0f1653) !important; border: 1px solid rgba(167,194,255,.25); }
+  [data-theme="dark"] [data-iw="header-desc"] { color: var(--iw-slate-600) !important; }
+
+  /* TopNav buttons */
+  [data-theme="dark"] [data-iw="tab-btn"][data-on="0"] { background: rgba(46,50,70,.88) !important; color: var(--iw-slate-800) !important; border-color: rgba(167,194,255,.14) !important; }
+  [data-theme="dark"] [data-iw="tab-btn"][data-on="1"] { background: linear-gradient(135deg, #3b56c7, #1e3a8a) !important; color:#fff !important; border-color: rgba(122,168,255,.5) !important; }
+
+  /* Pills in Estado de Resultados header */
+  [data-theme="dark" i] [data-iw="pill-soft"] { background: rgba(122,168,255,.15) !important; color: var(--iw-accent-soft) !important; border-color: rgba(167,194,255,.2) !important; }
+
+  /* Popover */
+  [data-theme="dark"] [data-iw="chart-popover"] { background: rgba(42,45,62,.98) !important; border-color: rgba(167,194,255,.18) !important; color: var(--iw-ink) !important; }
+  [data-theme="dark"] [data-iw="chart-popover"] [data-iw="pop-title"] { color: var(--iw-accent-soft) !important; }
+  [data-theme="dark"] [data-iw="chart-popover"] [data-iw="pop-text"] { color: var(--iw-slate-700) !important; }
+  [data-theme="dark"] [data-iw="chart-info"] { background: #1e3a8a !important; }
+
+  /* Flip-card value text (inline #14233b) — forzar color claro en dark */
+  [data-theme="dark"] [data-iw="flip-card"] .flip-front { color: var(--iw-ink) !important; }
+  [data-theme="dark"] [data-iw="flip-card"] .flip-value { color: #f3f4f9 !important; }
+  [data-theme="dark"] [data-iw="flip-card"] .flip-title { color: var(--iw-slate-500) !important; }
+  [data-theme="dark"] [data-iw="flip-card"] .flip-hint { color: var(--iw-slate-500) !important; }
+  [data-theme="dark"] [data-iw="flip-card"] .flip-meta { color: var(--iw-slate-400) !important; }
+  /* Delta colors stay — inline style already carries green/red, no override */
+
+  /* Sidebar — botones light + selects: superficie oscura sólida, no translúcida */
+  [data-theme="dark"] [data-iw="light-btn"],
+  [data-theme="dark"] [data-iw="select-field"] {
+    background: #14233b !important;
+    color: #eef1f7 !important;
+    border: 1px solid rgba(167,194,255,.2) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04) !important;
+  }
+  [data-theme="dark"] [data-iw="light-btn"]:hover {
+    background: #1e3a8a !important;
+    border-color: rgba(122,168,255,.55) !important;
+    box-shadow: 0 10px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  }
+  [data-theme="dark"] [data-iw="select-field"]:hover {
+    background: #1a2a4a !important;
+    border-color: rgba(122,168,255,.55) !important;
+    box-shadow: 0 8px 18px rgba(0,0,0,.45) !important;
+  }
+
+  /* Chips de familia — estado default en dark */
+  [data-theme="dark"] [data-iw="chip"] {
+    background: rgba(255,255,255,.05) !important;
+    border-color: rgba(167,194,255,.12) !important;
+    color: rgba(238,241,247,.85) !important;
+  }
+  [data-theme="dark"] [data-iw="chip"]:hover {
+    background: rgba(122,168,255,.25) !important;
+    border-color: rgba(122,168,255,.55) !important;
+  }
+  /* Chip activo se mantiene el azul del estilo inline, se ve bien */
+  @media (max-width: 900px) {
+    .iw-layout { flex-direction: column; }
+    .iw-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .iw-grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="TopNav.jsx"></script>
+<script type="text/babel" src="HeaderBand.jsx"></script>
+<script type="text/babel" src="KpiCard.jsx"></script>
+<script type="text/babel" src="FlipCard.jsx"></script>
+<script type="text/babel" src="ChartPanel.jsx"></script>
+<script type="text/babel" src="ThemeToggle.jsx"></script>
+<script type="text/babel" src="ExportMenu.jsx"></script>
+
+<script type="text/babel">
+const IW_MODULES = {
+  financiera: { label:'Financiera', icon:'💰', tabs:['Resumen Ejecutivo','Estado de Resultados'] },
+  operacional: { label:'Operacional', icon:'📦', tabs:['Inventario y Ventas','Índice de Salud Master'] },
+};
+
+function App() {
+  const [modulo, setModulo] = React.useState(() => localStorage.getItem('iw.modulo') || 'financiera');
+  const [tabByModule, setTabByModule] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('iw.tabByModule')) || {}; } catch(e) { return {}; }
+  });
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('iw.theme') || 'light');
+  const [selectedFam, setSelectedFam] = React.useState(['Antibióticos','Analgésicos','Cardiología','Dermatología','Pediatría']);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const data = window.IW_DATA;
+  const familiasAll = ['Antibióticos','Analgésicos','Cardiología','Dermatología','Pediatría'];
+
+  const tabsForModule = IW_MODULES[modulo].tabs;
+  const tab = tabByModule[modulo] || tabsForModule[0];
+  const setTab = (t) => setTabByModule(s => ({ ...s, [modulo]: t }));
+
+  React.useEffect(() => { localStorage.setItem('iw.modulo', modulo); }, [modulo]);
+  React.useEffect(() => { localStorage.setItem('iw.tabByModule', JSON.stringify(tabByModule)); }, [tabByModule]);
+  React.useEffect(() => {
+    localStorage.setItem('iw.theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const toggleFam = (f) => setSelectedFam(s => s.includes(f) ? s.filter(x => x !== f) : [...s, f]);
+
+  const filasFiltradas = data.familias.filter(f => selectedFam.includes(f.name));
+
+  return (
+    <div className="iw-layout">
+      <Sidebar familias={familiasAll} onFamiliaToggle={toggleFam} selected={selectedFam}
+        collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)}
+        modulo={modulo} onModuloChange={setModulo} />
+      <main className="iw-main">
+        <div style={{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:10,marginBottom:10}}>
+          <span style={{fontSize:10.5,fontWeight:800,letterSpacing:1.5,textTransform:'uppercase',color:'var(--iw-slate-500)'}}>
+            {theme === 'dark' ? 'Modo oscuro' : 'Modo claro'}
+          </span>
+          <ThemeToggle theme={theme} onChange={setTheme} />
+        </div>
+        <TopNav tabs={tabsForModule} active={tab} onChange={setTab} moduleLabel={IW_MODULES[modulo].label} moduleIcon={IW_MODULES[modulo].icon} />
+
+        {tab === 'Inventario y Ventas' && <>
+          <HeaderBand title="Panel de Venta y Stock" description="Visión estratégica de ventas e inventario — corte Mar-2026." />
+          <div className="iw-kicker">Visión estratégica</div>
+          <div className="iw-grid-4">
+            {data.kpisInventario.map(k => <FlipCard key={k.title} {...k} />)}
+          </div>
+          <div className="iw-divider"></div>
+          <div className="iw-kicker" style={{marginTop:14}}>Alertas operacionales</div>
+          <div className="iw-grid-4">
+            {data.kpisAlertas.map(k => <FlipCard key={k.title} {...k} />)}
+          </div>
+          <ChartPanel title="Evolutivo de Ingresos" description="Trayectoria de ingresos reales comparada contra el presupuesto. Real en barras, presupuesto en línea roja.">
+            <TrendMiniChart bars={data.trendBars} line={data.trendLine} labels={data.monthLabels} />
+          </ChartPanel>
+          <ChartPanel title="Evolución Histórica del Stock y Cobertura" description="Analiza la eficiencia del almacenamiento en el tiempo. Barras azules: cantidad física en bodega. Línea roja: meses de inventario (cobertura). Objetivo: mantener la línea roja estable dentro de la política para evitar excesos o quiebres.">
+            <StockCoverageChart stock={data.stockEvo.stock} cobertura={data.stockEvo.cobertura} labels={data.stockEvo.labels} />
+          </ChartPanel>
+          <h3 className="iw-section-title">Desglose por Familia</h3>
+          <div className="iw-table-wrap">
+            <table className="iw-table">
+              <thead><tr><th>Familia</th><th>Venta Valorizada</th><th>Stock (u)</th><th>Nivel de Servicio</th></tr></thead>
+              <tbody>
+                {filasFiltradas.map(f => (
+                  <tr key={f.name}><td style={{fontWeight:700}}>{f.name}</td><td>{f.venta}</td><td>{f.stock}</td><td>{f.ns}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>}
+
+        {tab === 'Índice de Salud Master' && <>
+          <HeaderBand title="Índice de Salud Master" description="Gauge consolidado de salud de bodega — tramos rojo/naranjo/verde." />
+          <div className="iw-grid-2">
+            <ChartPanel title="Gauge de Salud" description="Indicador ejecutivo del nivel consolidado de salud. 0–40 rojo, 40–70 naranjo, 70–100 verde.">
+              <div style={{display:'flex',justifyContent:'center',padding:'14px 0 6px'}}>
+                <svg viewBox="0 0 220 140" style={{width:'100%',maxWidth:360}}>
+                  <path d="M20 120 A 90 90 0 0 1 70 38" fill="none" stroke="#ef4444" strokeWidth="18" strokeLinecap="round"/>
+                  <path d="M70 38 A 90 90 0 0 1 150 38" fill="none" stroke="#f59e0b" strokeWidth="18" strokeLinecap="round"/>
+                  <path d="M150 38 A 90 90 0 0 1 200 120" fill="none" stroke="#2bb673" strokeWidth="18" strokeLinecap="round"/>
+                  <line x1="110" y1="120" x2="168" y2="62" stroke="#14233b" strokeWidth="3" strokeLinecap="round"/>
+                  <circle cx="110" cy="120" r="6" fill="#14233b"/>
+                  <text x="110" y="105" textAnchor="middle" fontSize="28" fontWeight="800" fill="#14233b" fontFamily="Inter, sans-serif">78</text>
+                </svg>
+              </div>
+            </ChartPanel>
+            <ChartPanel title="Barras por Familia" description="Distribución de salud por familia, ordenado descendente.">
+              <svg viewBox="0 0 360 220" style={{width:'100%',height:220}}>
+                {[['Antibióticos',92,'#2bb673'],['Dermatología',87,'#2bb673'],['Analgésicos',74,'#f59e0b'],['Cardiología',62,'#f59e0b'],['Pediatría',48,'#ef4444']].map(([n,v,c], i) => (
+                  <g key={n} transform={`translate(0,${i*36+12})`}>
+                    <text x="0" y="18" fontSize="11" fontWeight="700" fill="#14233b" fontFamily="Inter, sans-serif">{n}</text>
+                    <rect x="100" y="6" width={v*2.3} height="18" rx="4" fill={c} opacity="0.88"/>
+                    <text x={100+v*2.3+6} y="19" fontSize="11" fontWeight="800" fill="#14233b" fontFamily="Inter, sans-serif">{v}</text>
+                  </g>
+                ))}
+              </svg>
+            </ChartPanel>
+          </div>
+        </>}
+
+        {tab === 'Resumen Ejecutivo' && <>
+          <HeaderBand title="Resumen Ejecutivo" description="Tarjetas del mes actual y evolutivos principales del reporte financiero." />
+          <div style={{color:'var(--iw-slate-500)',fontSize:12.5,fontWeight:700,letterSpacing:1,textTransform:'uppercase',marginBottom:10}}>Corte actual: Mar-2026</div>
+          <div className="iw-kicker">KPIs financieros — haz clic para voltear</div>
+          <div className="iw-grid-4">
+            {data.kpisFinanciero.slice(0,4).map(k => <FlipCard key={k.title} {...k} />)}
+          </div>
+          <div style={{height:14}}/>
+          <div className="iw-grid-4">
+            {data.kpisFinanciero.slice(4).map(k => <FlipCard key={k.title} {...k} />)}
+          </div>
+          <div className="iw-grid-2" style={{marginTop:22}}>
+            <ChartPanel title="Evolutivo de Ingresos" description="Ingreso Real (Barras) vs Ingreso Presupuesto (Línea Roja).">
+              <TrendMiniChart bars={data.trendBars} line={data.trendLine} labels={data.monthLabels} />
+            </ChartPanel>
+            <ChartPanel title="Evolutivo de Margen Bruto" description="Margen bruto (barras verdes) y % margen (línea navy).">
+              <TrendMiniChart bars={data.trendBars.map(v => v*0.6)} line={data.trendLine.map(v => v*0.75)} labels={data.monthLabels} />
+            </ChartPanel>
+          </div>
+        </>}
+
+        {tab === 'Estado de Resultados' && <>
+          <HeaderBand title="Estado de Resultados" description="EE.RR consolidado — Real vs Presupuesto, variación absoluta y porcentual." />
+          <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:14,flexWrap:'wrap'}}>
+            <div data-iw="pill-soft" style={{background:'#0A1261',color:'#fff',padding:'8px 14px',borderRadius:999,fontSize:12,fontWeight:800,letterSpacing:.5}}>Corte: Mar-2026</div>
+            <div data-iw="pill-soft" style={{background:'#eef2ff',color:'#0A1261',padding:'8px 14px',borderRadius:999,fontSize:12,fontWeight:700,border:'1px solid rgba(10,18,97,.12)'}}>Moneda: CLP millones</div>
+            <div data-iw="pill-soft" style={{background:'#fff',color:'#14233b',padding:'8px 14px',borderRadius:999,fontSize:12,fontWeight:700,border:'1px solid rgba(20,35,59,.12)'}}>Vista: Acumulado YTD</div>
+            <div style={{marginLeft:'auto'}}><ExportMenu /></div>
+          </div>
+          <div className="iw-table-wrap">
+            <table className="iw-table">
+              <thead>
+                <tr>
+                  <th style={{width:'32%'}}>Cuenta</th>
+                  <th>Real</th>
+                  <th>Presupuesto</th>
+                  <th>Var. Abs.</th>
+                  <th>Var. %</th>
+                  <th>Cumpl. %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {k:'Ingresos Operacionales', r:12480, p:11900, bold:true},
+                  {k:'  Venta Canal Retail', r:7820, p:7400, sub:true},
+                  {k:'  Venta Canal Institucional', r:3540, p:3200, sub:true},
+                  {k:'  Otros Ingresos', r:1120, p:1300, sub:true},
+                  {k:'Costo de Venta', r:-7620, p:-7350, bold:true, neg:true},
+                  {k:'Margen Bruto', r:4860, p:4550, bold:true, highlight:true},
+                  {k:'Gastos de Administración', r:-1240, p:-1180, neg:true},
+                  {k:'Gastos de Ventas', r:-980, p:-1020, neg:true},
+                  {k:'EBITDA', r:2640, p:2350, bold:true, highlight:true},
+                  {k:'Depreciación y Amortización', r:-310, p:-305, neg:true},
+                  {k:'Resultado Operacional', r:2330, p:2045, bold:true},
+                  {k:'Resultado No Operacional', r:-120, p:-150, neg:true},
+                  {k:'Impuestos', r:-595, p:-511, neg:true},
+                  {k:'Utilidad Neta', r:1615, p:1384, bold:true, highlight:true, total:true},
+                ].map((row,i) => {
+                  const abs = row.r - row.p;
+                  const pct = row.p !== 0 ? (abs / Math.abs(row.p)) * 100 : 0;
+                  const cumpl = row.p !== 0 ? (row.r / row.p) * 100 : 0;
+                  const isPositive = row.neg ? abs < 0 : abs > 0; // for expenses, more negative = worse
+                  const varColor = isPositive ? '#2bb673' : '#ef4444';
+                  const fmt = (v) => v.toLocaleString('es-CL');
+                  return (
+                    <tr key={i} style={row.highlight ? {background:'rgba(10,18,97,.045)'} : {}}>
+                      <td style={{fontWeight: row.bold ? 800 : 600, paddingLeft: row.sub ? 32 : 16, color: row.total ? '#0A1261' : '#14233b', borderTop: row.total ? '2px solid #0A1261' : undefined}}>{row.k.trim()}</td>
+                      <td style={{fontWeight: row.bold ? 800 : 600}}>{fmt(row.r)}</td>
+                      <td style={{color:'#6b7280'}}>{fmt(row.p)}</td>
+                      <td style={{color:varColor, fontWeight:700}}>{abs > 0 ? '+' : ''}{fmt(abs)}</td>
+                      <td style={{color:varColor, fontWeight:700}}>{pct > 0 ? '+' : ''}{pct.toFixed(1)}%</td>
+                      <td>
+                        <div style={{display:'inline-flex',alignItems:'center',gap:8,justifyContent:'flex-end',width:'100%'}}>
+                          <div style={{width:70,height:6,background:'rgba(20,35,59,.08)',borderRadius:999,overflow:'hidden'}}>
+                            <div style={{width:`${Math.min(Math.max(cumpl,0),120)*(100/120)}%`, height:'100%', background: cumpl >= 100 ? '#2bb673' : cumpl >= 90 ? '#f59e0b' : '#ef4444', borderRadius:999}}/>
+                          </div>
+                          <span style={{fontWeight:800,minWidth:48,textAlign:'right'}}>{cumpl.toFixed(0)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="iw-grid-2" style={{marginTop:22}}>
+            <ChartPanel title="Composición del Costo" description="Peso relativo de cada línea del costo sobre los ingresos del período.">
+              <svg viewBox="0 0 360 220" style={{width:'100%',height:220}}>
+                {[
+                  ['Costo de Venta', 61, '#0A1261'],
+                  ['Gastos Admin.', 10, '#1e3a8a'],
+                  ['Gastos Ventas', 8, '#3b82f6'],
+                  ['D&A', 2, '#60a5fa'],
+                  ['Impuestos', 5, '#93c5fd'],
+                  ['Utilidad Neta', 14, '#2bb673'],
+                ].map(([n,v,c],i) => (
+                  <g key={n} transform={`translate(0,${i*32+8})`}>
+                    <text x="0" y="16" fontSize="11" fontWeight="700" fill="#14233b" fontFamily="Inter, sans-serif">{n}</text>
+                    <rect x="110" y="4" width={v*3} height="16" rx="3" fill={c}/>
+                    <text x={110+v*3+6} y="16" fontSize="11" fontWeight="800" fill="#14233b" fontFamily="Inter, sans-serif">{v}%</text>
+                  </g>
+                ))}
+              </svg>
+            </ChartPanel>
+            <ChartPanel title="EBITDA Evolutivo" description="Últimos 12 meses, comparado contra presupuesto mensual.">
+              <TrendMiniChart bars={data.trendBars.map(v => v*0.55)} line={data.trendLine.map(v => v*0.5)} labels={data.monthLabels} />
+            </ChartPanel>
+          </div>
+        </>}
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body></html>

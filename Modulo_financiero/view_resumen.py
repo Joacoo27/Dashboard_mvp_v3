@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import streamlit as st
 
+from core.charts import chart_config, get_template
 from .logic import format_currency, format_percent, format_ratio
 from .logic import build_resumen_dashboard, build_resumen_trends
 from .ui_helpers import render_header, render_metric_card
@@ -107,7 +108,7 @@ def render(bundle: dict[str, object]) -> None:
                 )
             )
             fig.update_layout(
-                template="plotly_white",
+                template=get_template(),
                 height=420,
                 margin=dict(l=10, r=10, t=10, b=10),
                 hovermode="x unified",
@@ -116,7 +117,7 @@ def render(bundle: dict[str, object]) -> None:
                 plot_bgcolor="rgba(255,255,255,1)",
                 font=dict(color="#14233b"),
             )
-            st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
+            st.plotly_chart(fig, use_container_width=True, theme=None, config=chart_config())
 
     with right_col:
         render_info_capsule(
@@ -147,7 +148,7 @@ def render(bundle: dict[str, object]) -> None:
                 )
             )
             fig.update_layout(
-                template="plotly_white",
+                template=get_template(),
                 height=420,
                 margin=dict(l=10, r=10, t=10, b=10),
                 hovermode="x unified",
@@ -157,4 +158,4 @@ def render(bundle: dict[str, object]) -> None:
                 font=dict(color="#14233b"),
                 yaxis2=dict(overlaying="y", side="right", title="%", range=[0, 105]),
             )
-            st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
+            st.plotly_chart(fig, use_container_width=True, theme=None, config=chart_config())

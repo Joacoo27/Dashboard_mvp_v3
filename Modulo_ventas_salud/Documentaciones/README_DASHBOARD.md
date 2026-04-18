@@ -64,7 +64,7 @@ Integración con la tabla maestra para filtrar por dimensiones de negocio:
 - `app.py`: Orquestador principal y gestor de estado/filtros.
 - `logic.py`: Motor de cálculo logística (Stock de Seguridad, NS, Quiebres).
 - `data.py`: Capa de abstracción de datos y carga de Parquet.
-- `view_salud.py` / `view_stock.py`: Componentes visuales modulares y reutilizables.
+- `view_inventario_ventas.py` / `view_indice_salud_master.py`: una vista por pestaña del módulo operacional.
 - `consolidar_parquets.py`: Pipeline de ETL que sincroniza PostgreSQL con caché Parquet.
 - `requirements.txt`: Dependencias mínimas para ejecutar el proyecto.
 - `.env.example`: Plantilla de variables de entorno para conexión a BD.

@@ -157,7 +157,7 @@ def actualizar_todo():
         df_stats = pd.DataFrame(stats_list)
 
         df_stock_final = df_stock_now.merge(df_stats, on='codigo_producto', how='left').fillna(0)
-        # Renombrar para que logic.py y view_stock coincidan
+        # Renombrar para que logic.py y la vista de inventario coincidan
         df_stock_final = df_stock_final.rename(columns={'stock': 'stock_actual'})
         df_stock_final['transito'] = 0
         df_stock_final['lead_time'] = 30

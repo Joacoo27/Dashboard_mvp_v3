@@ -1,0 +1,267 @@
+/* =========================================================
+   Interwins Design System — colors_and_type.css
+   Source of truth extracted from Dashboard-responsivo/app.py
+   ========================================================= */
+
+/* ---------- Typography ---------- */
+/* Interwins uses Inter (sans) as the only webfont. Substituted via Google
+   Fonts here because the codebase loads it implicitly; no TTF in repo. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* ===== Brand / ink ===== */
+  --iw-navy:        #0A1261;  /* title-navy, brand primary */
+  --iw-navy-hover:  #101a7a;  /* expander hover */
+  --iw-ink:         #14233b;  /* body text */
+  --iw-brand:       #1e3a8a;  /* deep blue supporting */
+  --iw-accent:      #3b82f6;  /* bright blue, links / focus / accent */
+  --iw-accent-soft: #60a5fa;  /* flip-card reverse accent */
+
+  /* ===== Surfaces ===== */
+  --iw-bg:            #fcfbf7; /* app background (cream) */
+  --iw-panel-bg:      #fffdf8; /* main panel (cream white) */
+  --iw-surface:       rgba(255, 255, 255, 0.96);
+  --iw-surface-solid: #ffffff;
+  --iw-surface-soft:  rgba(255, 255, 255, 0.82);
+  --iw-surface-alt:   #eef2ff; /* table header / pale navy */
+  --iw-surface-alt-2: #f1f5f9; /* zebra / subtotal row */
+  --iw-surface-alt-3: #f8fafc; /* table header EERR */
+
+  /* ===== Neutrals (slate ramp, used for muted text + dividers) ===== */
+  --iw-slate-900: #0c1e4c;
+  --iw-slate-800: #1e293b;
+  --iw-slate-700: #334155;
+  --iw-slate-600: #475569;
+  --iw-slate-500: #64748b;
+  --iw-slate-400: #94a3b8;
+  --iw-slate-300: #cbd5e1;
+  --iw-slate-200: #e2e8f0;
+  --iw-slate-100: #f1f5f9;
+
+  /* ===== Semantic ===== */
+  --iw-success: #2bb673;   /* positive delta, green */
+  --iw-danger:  #ef4444;   /* negative delta, red, budget line */
+  --iw-warning: #f59e0b;   /* gauge middle */
+  --iw-gauge-red:    #ef4444;
+  --iw-gauge-orange: #f59e0b;
+  --iw-gauge-green:  #2bb673;
+
+  /* ===== Borders ===== */
+  --iw-border-soft:   rgba(30, 58, 138, 0.12);
+  --iw-border-strong: rgba(59, 130, 246, 0.55);
+  --iw-border-hair:   rgba(20, 35, 59, 0.08);
+
+  /* ===== Shadows & focus ===== */
+  --iw-shadow-soft:   0 10px 30px rgba(20, 35, 59, 0.05);
+  --iw-shadow-card:   0 8px 32px rgba(31, 38, 135, 0.05);
+  --iw-shadow-strong: 0 18px 38px rgba(20, 35, 59, 0.10);
+  --iw-shadow-lift:   0 16px 40px rgba(20, 35, 59, 0.06);
+  --iw-shadow-band:   0 10px 30px rgba(20, 35, 59, 0.14);
+  --iw-shadow-navy:   0 16px 34px rgba(10, 18, 97, 0.22);
+  --iw-focus-ring:    0 0 0 3px rgba(59, 130, 246, 0.16);
+
+  /* ===== Radii ===== */
+  --iw-radius-xs: 12px;
+  --iw-radius-sm: 14px;
+  --iw-radius-md: 18px;
+  --iw-radius-lg: 22px;
+  --iw-radius-xl: 24px;
+  --iw-radius-pill: 999px;
+
+  /* ===== Spacing (8-pt-ish, matches in-use values) ===== */
+  --iw-space-1: 4px;
+  --iw-space-2: 8px;
+  --iw-space-3: 12px;
+  --iw-space-4: 16px;
+  --iw-space-5: 20px;
+  --iw-space-6: 24px;
+  --iw-space-7: 32px;
+  --iw-space-8: 40px;
+
+  /* ===== Backgrounds (signature radial gradients on main panel) ===== */
+  --iw-app-bg:
+    radial-gradient(circle at top left,  rgba(59, 130, 246, 0.07), transparent 28%),
+    radial-gradient(circle at top right, rgba(30, 58, 138, 0.05), transparent 22%),
+    var(--iw-bg);
+
+  /* ===== Type scale (px values lifted from app.py) ===== */
+  --iw-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --iw-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Display + headings */
+  --iw-fs-display:    clamp(1.7rem, 2.2vw, 2.2rem); /* header-band */
+  --iw-fs-h1:         26px;    /* eerr-title, page title */
+  --iw-fs-h2:         24px;    /* chart-section-title */
+  --iw-fs-h3:         22px;    /* section-title */
+  --iw-fs-h4:         19px;    /* minor-band-title */
+  --iw-fs-value:      clamp(2.1rem, 2.7vw, 3.2rem); /* metric-value */
+
+  --iw-fs-body:       14.5px;
+  --iw-fs-small:      13px;
+  --iw-fs-xs:         12px;
+  --iw-fs-eyebrow:    14px;    /* UPPERCASE tracking */
+
+  --iw-fw-regular:    400;
+  --iw-fw-medium:     500;
+  --iw-fw-semibold:   600;
+  --iw-fw-bold:       700;
+  --iw-fw-heavy:      800;
+  --iw-fw-black:      900;
+
+  --iw-lh-tight: 1.05;
+  --iw-lh-snug:  1.2;
+  --iw-lh-base:  1.45;
+  --iw-lh-loose: 1.6;
+
+  --iw-track-eyebrow: 1px;      /* UPPERCASE eyebrow */
+  --iw-track-tight:   -0.01em;
+  --iw-track-tighter: -0.03em;  /* eerr-title */
+}
+
+/* ---------- Base / element styles ---------- */
+html, body {
+  font-family: var(--iw-font-sans);
+  color: var(--iw-ink);
+  background: var(--iw-app-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Semantic type */
+.iw-display, h1.iw {
+  font-size: var(--iw-fs-display);
+  font-weight: var(--iw-fw-heavy);
+  color: #ffffff;
+  letter-spacing: var(--iw-track-tight);
+  line-height: var(--iw-lh-snug);
+}
+h1.iw-page {
+  font-size: var(--iw-fs-h1);
+  font-weight: var(--iw-fw-black);
+  color: var(--iw-navy);
+  letter-spacing: var(--iw-track-tighter);
+}
+h2.iw, .iw-h2 {
+  font-size: var(--iw-fs-h2);
+  font-weight: var(--iw-fw-heavy);
+  color: #111827;
+  line-height: var(--iw-lh-snug);
+}
+h3.iw, .iw-h3 {
+  font-size: var(--iw-fs-h3);
+  font-weight: var(--iw-fw-heavy);
+  color: #111827;
+  letter-spacing: var(--iw-track-tight);
+}
+h4.iw, .iw-h4 {
+  font-size: var(--iw-fs-h4);
+  font-weight: var(--iw-fw-heavy);
+  color: var(--iw-ink);
+  line-height: 1.15;
+}
+p.iw, .iw-body {
+  font-size: var(--iw-fs-body);
+  line-height: var(--iw-lh-base);
+  color: var(--iw-ink);
+  font-weight: var(--iw-fw-medium);
+}
+.iw-caption {
+  font-size: var(--iw-fs-small);
+  color: var(--iw-slate-500);
+  font-weight: var(--iw-fw-semibold);
+}
+.iw-eyebrow {
+  font-size: var(--iw-fs-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: var(--iw-track-eyebrow);
+  color: var(--iw-slate-500);
+  font-weight: var(--iw-fw-bold);
+}
+.iw-metric-value {
+  font-size: var(--iw-fs-value);
+  font-weight: var(--iw-fw-heavy);
+  color: var(--iw-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--iw-lh-tight);
+}
+code.iw, .iw-code {
+  font-family: var(--iw-font-mono);
+  background: rgba(10, 18, 97, 0.06);
+  color: var(--iw-navy);
+  border: 1px solid rgba(10, 18, 97, 0.10);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.92em;
+}
+
+/* =========================================================
+   Dark theme — warm, cream-adjacent (not aggressive black)
+   Activated by data-theme="dark" on <html> or <body>
+   Philosophy: same navy anchor, elevated surfaces on a warm
+   slate base, preserved semantic reds/greens with softened
+   saturation for dark legibility.
+   ========================================================= */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  /* Brand stays navy-ish but shifted lighter so it reads on dark */
+  --iw-navy:        #dbe2ff;   /* titles become pale periwinkle */
+  --iw-navy-hover:  #eef2ff;
+  --iw-ink:         #eef1f7;   /* body text (warm off-white) */
+  --iw-brand:       #93a8ff;
+  --iw-accent:      #7aa8ff;
+  --iw-accent-soft: #a7c2ff;
+
+  /* Warm dark surfaces — not #000, not pure slate.
+     Base is a warm navy-tinted charcoal, lifted with warm highlights. */
+  --iw-bg:            #1b1d2a;   /* app base — warm navy-charcoal */
+  --iw-panel-bg:      #22243380;
+  --iw-surface:       rgba(42, 45, 62, 0.88);       /* cards */
+  --iw-surface-solid: #2a2d3e;
+  --iw-surface-soft:  rgba(42, 45, 62, 0.55);
+  --iw-surface-alt:   #2d3048;   /* table head */
+  --iw-surface-alt-2: #262839;
+  --iw-surface-alt-3: #1f2230;
+
+  /* Slate ramp inverted: what used to be dark text becomes light */
+  --iw-slate-900: #f3f4f9;
+  --iw-slate-800: #dfe2ec;
+  --iw-slate-700: #c3c8d6;
+  --iw-slate-600: #a4aab9;
+  --iw-slate-500: #8d93a4;
+  --iw-slate-400: #6c7283;
+  --iw-slate-300: #4a4f60;
+  --iw-slate-200: #363a4b;
+  --iw-slate-100: #2a2d3e;
+
+  /* Semantic — desaturated for dark (less glow) */
+  --iw-success: #46c98a;
+  --iw-danger:  #ff6b6b;
+  --iw-warning: #fbbf5a;
+  --iw-gauge-red:    #ff6b6b;
+  --iw-gauge-orange: #fbbf5a;
+  --iw-gauge-green:  #46c98a;
+
+  --iw-border-soft:   rgba(167, 194, 255, 0.14);
+  --iw-border-strong: rgba(122, 168, 255, 0.45);
+  --iw-border-hair:   rgba(255, 255, 255, 0.06);
+
+  /* Shadows — softer + warmer */
+  --iw-shadow-soft:   0 10px 30px rgba(0, 0, 0, 0.35);
+  --iw-shadow-card:   0 8px 32px rgba(0, 0, 0, 0.40);
+  --iw-shadow-strong: 0 18px 38px rgba(0, 0, 0, 0.48);
+  --iw-shadow-lift:   0 16px 40px rgba(0, 0, 0, 0.42);
+  --iw-shadow-band:   0 10px 30px rgba(0, 0, 0, 0.48);
+  --iw-shadow-navy:   0 16px 34px rgba(122, 168, 255, 0.18);
+  --iw-focus-ring:    0 0 0 3px rgba(122, 168, 255, 0.25);
+
+  --iw-app-bg:
+    radial-gradient(circle at top left,  rgba(122, 168, 255, 0.10), transparent 30%),
+    radial-gradient(circle at top right, rgba(167, 194, 255, 0.06), transparent 25%),
+    var(--iw-bg);
+}
+
+/* Smooth transition when toggling theme */
+html, body, [data-iw], .iw-main, .iw-table-wrap, .iw-table,
+.iw-table thead th, .iw-table tbody td {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}

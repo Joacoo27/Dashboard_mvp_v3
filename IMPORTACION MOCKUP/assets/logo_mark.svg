@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Interwins mark">
+  <defs>
+    <linearGradient id="iwm" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0A1261"></stop>
+      <stop offset="100%" stop-color="#1e3a8a"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#iwm)"></rect>
+  <text x="32" y="41" text-anchor="middle" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="-1">iw</text>
+  <rect x="10" y="51" width="44" height="2" rx="1" fill="#3b82f6"></rect>
+</svg>
