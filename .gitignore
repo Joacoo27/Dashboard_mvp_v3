@@ -19,3 +19,9 @@ streamlit_*_stderr.log
 
 .DS_Store
 Thumbs.db
+
+# Archivos no necesarios para el proyecto
+_archive/
+
+# Claude Code
+.claude/

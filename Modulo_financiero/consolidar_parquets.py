@@ -2,41 +2,47 @@ import pandas as pd
 import sys
 import os
 
-# Ajuste temporal del PATH para permitir ejecución directa como script en terminal o como módulo
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 try:
-    from Modulo_financiero.data import get_sqlalchemy_engine, CONTABLE_PARQUET, GLOSAS_PARQUET, PROJECT_DIR
+    from Modulo_financiero.data import get_sqlalchemy_engine, CONTABLE_PARQUET, PROJECT_DIR
 except ImportError:
-    from .data import get_sqlalchemy_engine, CONTABLE_PARQUET, GLOSAS_PARQUET, PROJECT_DIR
+    from .data import get_sqlalchemy_engine, CONTABLE_PARQUET, PROJECT_DIR
 
-def actualizar_todo():
-    """Consolida los datos financieros desde la base de datos."""
-    print("🚀 Iniciando Consolidación Financiera...")
-    engine = get_sqlalchemy_engine()
-    if not engine:
-        print("❌ Error: No se pudo conectar a la Base de Datos Financiera.")
-        return
-
-    try:
-        # 1. Contable
-        print("📥 Procesando Datos Contables...")
-        QUERY_CONTABLE = """
--- CONSTRUCCION M CONTABLE
+QUERY_CONSOLIDADO = """
+-- M CONTABLE CONSOLIDADO
+-- Grano final: anio + mes + cuenta_contable
+-- Alcance: ultimos 24 meses moviles incluyendo el mes actual
 WITH parametros AS (
     SELECT
         date_trunc('month', current_date)::date AS mes_actual,
-        (date_trunc('month', current_date) - INTERVAL '23 months')::date AS fecha_inicio
+        (date_trunc('month', current_date) - INTERVAL '23 months')::date AS fecha_inicio,
+        current_date::date AS fecha_fin
+),
+movimientos_filtrados AS (
+    SELECT
+        fmc.fecha_conta::date AS fecha_conta,
+        EXTRACT(YEAR FROM fmc.fecha_conta::date)::int AS anio,
+        EXTRACT(MONTH FROM fmc.fecha_conta::date)::int AS mes,
+        fmc.cuenta_contable,
+        fmc.usuario,
+        fmc.numero_comprobante,
+        NULLIF(BTRIM(fmc.glosa), '') AS glosa,
+        fmc.movdebe,
+        fmc.movhaber,
+        fmc.saldo
+    FROM fin_movimientos_contables fmc
+    CROSS JOIN parametros p
+    WHERE fmc.fecha_conta::date BETWEEN p.fecha_inicio AND p.fecha_fin
 ),
 presupuesto_base AS (
     SELECT
         fp.anio::int AS anio,
         meses.mes,
         fp.cuenta_contable,
-        fp.centro_costo,
         meses.ppto
     FROM fin_presupuestos fp
     CROSS JOIN LATERAL (
@@ -58,113 +64,83 @@ presupuesto_base AS (
     WHERE make_date(fp.anio::int, meses.mes, 1) BETWEEN p.fecha_inicio AND p.mes_actual
 ),
 presupuesto AS (
-    -- Se agrupa antes del join final para evitar duplicar PPTO si la fuente trae mas de una fila por llave.
     SELECT
         anio,
         mes,
         cuenta_contable,
-        centro_costo,
         SUM(ppto) AS ppto
     FROM presupuesto_base
-    GROUP BY anio, mes, cuenta_contable, centro_costo
-),
-maestro_cc AS (
-    SELECT
-        anio,
-        centro_costo
-    FROM (
-        SELECT
-            EXTRACT(YEAR FROM fmc.fecha_conta::date)::int AS anio,
-            fmc.centro_costo
-        FROM fin_movimientos_contables fmc
-        CROSS JOIN parametros p
-        WHERE fmc.fecha_conta::date BETWEEN p.fecha_inicio AND p.mes_actual
-
-        UNION
-
-        SELECT DISTINCT
-            anio::int AS anio,
-            cod_nivel4 AS centro_costo
-        FROM fin_maestro_centro_costo
-        CROSS JOIN parametros p
-        WHERE make_date(anio::int, 1, 1)
-            BETWEEN date_trunc('year', p.fecha_inicio)::date AND date_trunc('year', p.mes_actual)::date
-    ) cc
-    GROUP BY anio, centro_costo
-),
-tabla_fecha AS (
-    SELECT
-        base.anio,
-        base.mes,
-        base.pccodi_4,
-        cc.centro_costo,
-        mcc.nivel4 AS centro_costo_desc,
-        mcc.nivel3 AS nivel_3_cc,
-        mcc.nivel2 AS nivel_2_cc,
-        mcc.nombre_proyecto AS nombre_proyecto,
-        mcc.rut_cliente,
-        mcc.nombre_cliente
-    FROM (
-        SELECT
-            EXTRACT(YEAR FROM calendario.f)::int AS anio,
-            EXTRACT(MONTH FROM calendario.f)::int AS mes,
-            cuentas.pccodi_4
-        FROM parametros p
-        CROSS JOIN generate_series(
-            p.fecha_inicio::timestamp,
-            p.mes_actual::timestamp,
-            INTERVAL '1 month'
-        ) AS calendario(f)
-        CROSS JOIN (
-            SELECT DISTINCT
-                pccodi_4
-            FROM fin_maestro_cuentas
-        ) cuentas
-    ) base
-    LEFT JOIN maestro_cc cc
-        ON base.anio = cc.anio
-    LEFT JOIN fin_maestro_centro_costo mcc
-        ON cc.anio = mcc.anio::int
-        AND cc.centro_costo = mcc.cod_nivel4
+    GROUP BY anio, mes, cuenta_contable
 ),
 base_contable AS (
     SELECT
-        EXTRACT(YEAR FROM fmc.fecha_conta::date)::int AS anio,
-        EXTRACT(MONTH FROM fmc.fecha_conta::date)::int AS mes,
-        fmc.centro_costo,
-        fmc.centro_costo_desc,
-        fmc.cuenta_contable,
-        SUM(fmc.movdebe) AS movdebe,
-        SUM(fmc.movhaber) AS movhaber,
-        SUM(fmc.saldo) AS saldo
-    FROM fin_movimientos_contables fmc
-    CROSS JOIN parametros p
-    WHERE fmc.fecha_conta::date BETWEEN p.fecha_inicio AND p.mes_actual
-    GROUP BY
-        EXTRACT(YEAR FROM fmc.fecha_conta::date)::int,
-        EXTRACT(MONTH FROM fmc.fecha_conta::date)::int,
-        fmc.centro_costo,
-        fmc.centro_costo_desc,
-        fmc.cuenta_contable
+        mf.anio,
+        mf.mes,
+        mf.cuenta_contable,
+        SUM(mf.movdebe) AS debe,
+        SUM(mf.movhaber) AS haber,
+        SUM(mf.saldo) AS saldo
+    FROM movimientos_filtrados mf
+    GROUP BY mf.anio, mf.mes, mf.cuenta_contable
+),
+glosas_metricas AS (
+    SELECT
+        mf.anio,
+        mf.mes,
+        mf.cuenta_contable,
+        MIN(mf.fecha_conta) AS primera_fecha_conta,
+        MAX(mf.fecha_conta) AS ultima_fecha_conta,
+        COUNT(*) AS cantidad_registros_contables,
+        COUNT(DISTINCT mf.numero_comprobante) AS cantidad_comprobantes
+    FROM movimientos_filtrados mf
+    GROUP BY mf.anio, mf.mes, mf.cuenta_contable
+),
+glosas_resumen AS (
+    SELECT
+        base.anio,
+        base.mes,
+        base.cuenta_contable,
+        COUNT(*) AS cantidad_glosas,
+        STRING_AGG(base.glosa, ' | ' ORDER BY base.glosa) AS glosas_consolidadas
+    FROM (
+        SELECT DISTINCT
+            mf.anio,
+            mf.mes,
+            mf.cuenta_contable,
+            mf.glosa
+        FROM movimientos_filtrados mf
+        WHERE mf.glosa IS NOT NULL
+    ) base
+    GROUP BY base.anio, base.mes, base.cuenta_contable
+),
+usuarios_resumen AS (
+    SELECT
+        base.anio,
+        base.mes,
+        base.cuenta_contable,
+        COUNT(*) AS cantidad_usuarios,
+        STRING_AGG(base.usuario, ' | ' ORDER BY base.usuario) AS usuarios_contables
+    FROM (
+        SELECT DISTINCT
+            mf.anio,
+            mf.mes,
+            mf.cuenta_contable,
+            mf.usuario
+        FROM movimientos_filtrados mf
+        WHERE NULLIF(BTRIM(mf.usuario), '') IS NOT NULL
+    ) base
+    GROUP BY base.anio, base.mes, base.cuenta_contable
+),
+universo AS (
+    SELECT bc.anio, bc.mes, bc.cuenta_contable FROM base_contable bc
+    UNION
+    SELECT p.anio, p.mes, p.cuenta_contable FROM presupuesto p
 ),
 maestro_contabilidad AS (
     SELECT
-        tf.anio,
-        tf.mes,
-        tf.centro_costo,
-        tf.centro_costo_desc,
-        tf.nivel_3_cc,
-        tf.nivel_2_cc,
-        tf.nombre_proyecto,
-        tf.rut_cliente,
-        tf.nombre_cliente,
-        ifrs.cuenta AS cuenta_ifrs,
-        ifrs."NIVEL 1 IFRS" AS nivel_1_ifrs,
-        ifrs."NIVEL 2 IFRS" AS nivel_2_ifrs,
-        ifrs."NIVEL 3 IFRS" AS nivel_3_ifrs,
-        ifrs."TIPO EEFF" AS estado_financiero,
-        ifrs."NIVEL RATIO" AS nivel_ratio,
-        tf.pccodi_4 AS cuenta_contable,
+        u.anio,
+        u.mes,
+        u.cuenta_contable,
         mc.pccodi_4,
         mc.pcdesc_4,
         mc.pccodi_3,
@@ -173,19 +149,16 @@ maestro_contabilidad AS (
         mc.pcdesc_2,
         mc.pccodi_1,
         mc.pcdesc_1,
-        bc.movdebe,
-        bc.movhaber,
-        bc.saldo
-    FROM tabla_fecha tf
-    LEFT JOIN base_contable bc
-        ON tf.anio = bc.anio
-        AND tf.mes = bc.mes
-        AND tf.pccodi_4 = bc.cuenta_contable
-        AND tf.centro_costo = bc.centro_costo
+        ifrs.cuenta AS cuenta_ifrs,
+        ifrs."NIVEL 1 IFRS" AS nivel_1_ifrs,
+        ifrs."NIVEL 2 IFRS" AS nivel_2_ifrs,
+        ifrs."NIVEL 3 IFRS" AS nivel_3_ifrs,
+        ifrs."TIPO EEFF" AS estado_financiero,
+        ifrs."NIVEL RATIO" AS nivel_ratio
+    FROM universo u
     LEFT JOIN fin_maestro_cuentas mc
-        ON tf.pccodi_4 = mc.pccodi_4
+        ON u.cuenta_contable = mc.pccodi_4
     LEFT JOIN LATERAL (
-        -- Toma el ultimo anio IFRS <= al periodo; si no existe, usa el mas cercano posterior.
         SELECT
             t4.cuenta,
             t4."NIVEL 1 IFRS",
@@ -194,27 +167,20 @@ maestro_contabilidad AS (
             t4."TIPO EEFF",
             t4."NIVEL RATIO"
         FROM fin_maestro_contabilidad_anual_ifrs t4
-        WHERE t4."N° CUENTA" = tf.pccodi_4
+        WHERE t4."N° CUENTA" = u.cuenta_contable
         ORDER BY
-            CASE WHEN t4."aÑo"::int <= tf.anio THEN 0 ELSE 1 END,
+            CASE WHEN t4."aÑo"::int <= u.anio THEN 0 ELSE 1 END,
             CASE
-                WHEN t4."aÑo"::int <= tf.anio THEN tf.anio - t4."aÑo"::int
-                ELSE t4."aÑo"::int - tf.anio
+                WHEN t4."aÑo"::int <= u.anio THEN u.anio - t4."aÑo"::int
+                ELSE t4."aÑo"::int - u.anio
             END
         LIMIT 1
     ) ifrs ON TRUE
 ),
-maestro_contabilidad_agrupado AS (
+salida AS (
     SELECT
         mc.anio,
         mc.mes,
-        mc.centro_costo,
-        mc.centro_costo_desc,
-        mc.nivel_3_cc,
-        mc.nivel_2_cc,
-        mc.nombre_proyecto,
-        mc.rut_cliente,
-        mc.nombre_cliente,
         mc.cuenta_ifrs,
         mc.nivel_1_ifrs,
         mc.nivel_2_ifrs,
@@ -239,27 +205,33 @@ maestro_contabilidad_agrupado AS (
         mc.pcdesc_2,
         mc.pccodi_1,
         mc.pcdesc_1,
-        mc.movdebe AS debe,
-        mc.movhaber AS haber,
-        mc.saldo,
-        p.ppto
+        bc.debe,
+        bc.haber,
+        bc.saldo,
+        p.ppto,
+        gm.primera_fecha_conta,
+        gm.ultima_fecha_conta,
+        gm.cantidad_registros_contables,
+        gm.cantidad_comprobantes,
+        gr.cantidad_glosas,
+        gr.glosas_consolidadas,
+        ur.cantidad_usuarios,
+        ur.usuarios_contables
     FROM maestro_contabilidad mc
+    LEFT JOIN base_contable bc
+        ON mc.anio = bc.anio AND mc.mes = bc.mes AND mc.cuenta_contable = bc.cuenta_contable
     LEFT JOIN presupuesto p
-        ON mc.anio = p.anio
-        AND mc.mes = p.mes
-        AND mc.centro_costo = p.centro_costo
-        AND mc.cuenta_contable = p.cuenta_contable
+        ON mc.anio = p.anio AND mc.mes = p.mes AND mc.cuenta_contable = p.cuenta_contable
+    LEFT JOIN glosas_metricas gm
+        ON mc.anio = gm.anio AND mc.mes = gm.mes AND mc.cuenta_contable = gm.cuenta_contable
+    LEFT JOIN glosas_resumen gr
+        ON mc.anio = gr.anio AND mc.mes = gr.mes AND mc.cuenta_contable = gr.cuenta_contable
+    LEFT JOIN usuarios_resumen ur
+        ON mc.anio = ur.anio AND mc.mes = ur.mes AND mc.cuenta_contable = ur.cuenta_contable
 )
 SELECT
     anio,
     mes,
-    centro_costo,
-    centro_costo_desc,
-    nivel_3_cc AS "Nivel_3_CC",
-    nivel_2_cc AS "Nivel_2_CC",
-    nombre_proyecto AS "Nombre_Proyecto",
-    rut_cliente,
-    nombre_cliente,
     cuenta_ifrs AS "Cuenta_IFRS",
     nivel_1_ifrs AS "Nivel_1_IFRS",
     nivel_2_ifrs AS "Nivel_2_IFRS",
@@ -280,62 +252,40 @@ SELECT
         WHEN pcdesc_3_modificado = 'VENTAS INTERNAS' THEN 'INTERNO'
         WHEN pcdesc_3_modificado = 'COSTOS INTERNOS' THEN 'INTERNO'
         ELSE pcdesc_1
-    END AS "pcdesc_1_Modificado", -- Categoria creada para agrupar ventas/costos internos.
+    END AS "pcdesc_1_Modificado",
     pcdesc_1,
     debe,
     haber,
     saldo,
-    ppto AS "PPTO"
-FROM maestro_contabilidad_agrupado
-        """
-        df_contable = pd.read_sql(QUERY_CONTABLE.replace('%', '%%'), engine)
-        df_contable.to_parquet(CONTABLE_PARQUET)
-        print(f"   ✅ Contable: {len(df_contable)} filas guardadas.")
+    ppto AS "PPTO",
+    primera_fecha_conta AS "Primera_Fecha_Conta",
+    ultima_fecha_conta AS "Ultima_Fecha_Conta",
+    cantidad_registros_contables AS "Cantidad_Registros_Contables",
+    cantidad_comprobantes AS "Cantidad_Comprobantes",
+    cantidad_glosas AS "Cantidad_Glosas",
+    glosas_consolidadas AS "Glosas_Consolidadas",
+    cantidad_usuarios AS "Cantidad_Usuarios",
+    usuarios_contables AS "Usuarios_Contables"
+FROM salida
+"""
 
-        # 2. Glosas
-        print("📥 Procesando Glosas...")
-        QUERY_GLOSAS = """
-        WITH Agrupacion_Contabilidad AS (
-            SELECT 
-                EXTRACT(year FROM fecha_conta::date)::int AS anio,
-                EXTRACT(month FROM fecha_conta::date)::int AS mes,
-                fecha_conta::date,
-                centro_costo,
-                centro_costo_desc,
-                cuenta_contable,
-                usuario,
-                numero_comprobante,
-                glosa,
-                movdebe,
-                movhaber,
-                saldo
-            FROM fin_movimientos_contables
-            WHERE fecha_conta::date >= date_trunc('year', current_date - interval '2 year')::date
+
+def actualizar_todo():
+    """Consolida los datos financieros desde la base de datos. Lanza excepción si falla."""
+    engine = get_sqlalchemy_engine()
+    if not engine:
+        raise ConnectionError(
+            "No se pudo crear el engine de BD. Verifica las variables de entorno "
+            "(HOST_DATABASE, NAME_DATABASE, USER_DATABASE, PASW_DATABASE)."
         )
-        SELECT 
-            anio,
-            mes,
-            fecha_conta,
-            centro_costo,
-            centro_costo_desc,
-            cuenta_contable,
-            usuario,
-            numero_comprobante,
-            glosa,
-            SUM(movdebe) AS movdebe,
-            SUM(movhaber) AS movhaber,
-            SUM(saldo) AS saldo 
-        FROM Agrupacion_Contabilidad
-        GROUP BY anio, mes, fecha_conta, centro_costo, centro_costo_desc, cuenta_contable, glosa, numero_comprobante, usuario
-        """
-        df_glosas = pd.read_sql(QUERY_GLOSAS.replace('%', '%%'), engine)
-        df_glosas.to_parquet(GLOSAS_PARQUET)
-        print(f"   ✅ Glosas: {len(df_glosas)} filas guardadas.")
 
-    except Exception as e:
-        print(f"❌ Error durante la consolidación: {e}")
+    try:
+        df = pd.read_sql(QUERY_CONSOLIDADO.replace('%', '%%'), engine)
+        df.to_parquet(CONTABLE_PARQUET)
+        return len(df)
     finally:
         engine.dispose()
+
 
 if __name__ == "__main__":
     actualizar_todo()

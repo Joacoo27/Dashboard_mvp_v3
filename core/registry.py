@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 import importlib
 
+import streamlit as st
+
 
 Context = dict[str, Any]
 ContextLoader = Callable[[], Context]
@@ -30,13 +32,18 @@ class ModuleSpec:
     default_tab: str | None = None
 
 
-def discover_modules(package_names: list[str]) -> dict[str, ModuleSpec]:
+@st.cache_resource
+def _discover_impl(package_names: tuple[str, ...]) -> dict[str, ModuleSpec]:
     modules: dict[str, ModuleSpec] = {}
     for name in package_names:
         package = importlib.import_module(name)
         spec = package.get_module()
         modules[spec.key] = spec
     return dict(sorted(modules.items(), key=lambda item: item[1].order))
+
+
+def discover_modules(package_names: list[str]) -> dict[str, ModuleSpec]:
+    return _discover_impl(tuple(package_names))
 
 
 def resolve_active_module(modules: dict[str, ModuleSpec], key: str | None) -> ModuleSpec:

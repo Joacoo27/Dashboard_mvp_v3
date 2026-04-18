@@ -1,10 +1,11 @@
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 
 from core.components import render_sidebar_divider, render_sidebar_section
 from core.registry import ModuleSpec, TabSpec
 
-from .data import load_all_data
+from .data import load_all_data, CONTABLE_PARQUET
 from .view_balance import render as render_balance
 from .view_eerr import render as render_eerr
 from .view_resumen import render as render_resumen
@@ -19,37 +20,36 @@ def load_context() -> dict:
     return _load_financial_context()
 
 
+def _parquet_last_updated() -> str | None:
+    if CONTABLE_PARQUET.exists():
+        ts = datetime.fromtimestamp(CONTABLE_PARQUET.stat().st_mtime)
+        return ts.strftime("%d/%m/%Y %H:%M")
+    return None
+
+
 def render_sidebar(context: dict) -> dict:
     render_sidebar_divider()
     render_sidebar_section("🔄 Datos en Caché")
+
+    last_updated = _parquet_last_updated()
+    if last_updated:
+        st.sidebar.caption(f"Última actualización: {last_updated}")
+    else:
+        st.sidebar.caption("Sin caché — usando datos demo")
+
     if st.sidebar.button("Actualizar Parquet Financiero", key="fin_refresh", use_container_width=True):
-        with st.spinner("Sincronizando con base de datos..."):
-            import Modulo_financiero.consolidar_parquets as consolidar
+        try:
+            with st.spinner("Sincronizando con base de datos..."):
+                import Modulo_financiero.consolidar_parquets as consolidar
+                filas = consolidar.actualizar_todo()
+                _load_financial_context.clear()
+                st.cache_data.clear()
+            st.toast(f"Parquet actualizado — {filas:,} filas", icon="✅")
+            st.rerun()
+        except Exception as exc:
+            st.sidebar.error(f"Error al actualizar: {exc}")
 
-            consolidar.actualizar_todo()
-            _load_financial_context.clear()
-            st.cache_data.clear()
-        st.rerun()
-
-    render_sidebar_divider()
-    render_sidebar_section("🎯 Filtros Financieros")
-
-    active_filters: dict[str, list[str]] = {}
-    contable = context.get("contable", pd.DataFrame())
-    if not contable.empty:
-        for column, filter_key, label in [
-            ("centro_costo", "centros_costo", "Centro de costo"),
-            ("Nivel_2_CC", "niveles_2_cc", "Nivel 2 CC"),
-            ("Nivel_3_CC", "niveles_3_cc", "Nivel 3 CC"),
-            ("Nombre_Proyecto", "proyectos", "Proyecto"),
-        ]:
-            if column in contable.columns:
-                options = sorted(contable[column].dropna().astype(str).unique())
-                selected = st.sidebar.multiselect(label, options, key=f"fin_{filter_key}")
-                if selected:
-                    active_filters[filter_key] = selected
-
-    context.setdefault("meta", {})["active_filters"] = active_filters
+    context.setdefault("meta", {})["active_filters"] = {}
     return context
 
 

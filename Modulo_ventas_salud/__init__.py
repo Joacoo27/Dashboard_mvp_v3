@@ -32,10 +32,11 @@ SHORT_MONTH_NAMES = {
 
 
 @st.cache_data(show_spinner=False)
-def _load_operational_context() -> tuple[pd.DataFrame, pd.DataFrame]:
+def _load_operational_context() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sales_df = process_dataframe(load_data())
     maestro_df = load_maestro_productos()
-    return sales_df, maestro_df
+    enriched_df = _enrich_with_master(sales_df, maestro_df)
+    return sales_df, maestro_df, enriched_df
 
 
 def _build_period_label(df: pd.DataFrame) -> str:
@@ -61,10 +62,11 @@ def _enrich_with_master(df: pd.DataFrame, maestro_df: pd.DataFrame) -> pd.DataFr
 
 
 def load_context() -> dict:
-    sales_df, maestro_df = _load_operational_context()
+    sales_df, maestro_df, enriched_df = _load_operational_context()
     return {
         "sales_df": sales_df,
         "maestro_df": maestro_df,
+        "enriched_df": enriched_df,
         "period_label": _build_period_label(sales_df),
     }
 
@@ -87,7 +89,7 @@ def render_sidebar(context: dict) -> dict:
     render_sidebar_divider()
     render_sidebar_section("🎯 Filtros Globales")
 
-    enriched_df = _enrich_with_master(sales_df, maestro_df)
+    enriched_df = context.get("enriched_df", pd.DataFrame())
 
     familias = sorted(enriched_df["familia"].dropna().unique()) if "familia" in enriched_df.columns else []
     proveedores = sorted(enriched_df["proveedor"].dropna().unique()) if "proveedor" in enriched_df.columns else []
@@ -177,8 +179,7 @@ def render_sidebar(context: dict) -> dict:
     else:
         filtered_df = enriched_df.copy()
 
-    with st.spinner("Sincronizando Stock y Ventas..."):
-        inventory_df = load_and_calculate(policy_months)
+    inventory_df = load_and_calculate(policy_months)
 
     context.update(
         {

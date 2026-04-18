@@ -99,3 +99,68 @@
 
 /* --- Slider tick labels --- */
 [data-testid="stSliderTickBar"] p { color: #6c7283 !important; }
+
+/* --- Plotly chart backgrounds (SVG override) --- */
+[data-testid="stPlotlyChart"] .bg {
+    fill: #1b1d2a !important;
+}
+[data-testid="stPlotlyChart"] .bglayer rect {
+    fill: #1b1d2a !important;
+}
+/* Axis tick text */
+[data-testid="stPlotlyChart"] .xtick text,
+[data-testid="stPlotlyChart"] .ytick text {
+    fill: #8d93a4 !important;
+}
+/* Axis title text */
+[data-testid="stPlotlyChart"] .g-xtitle text,
+[data-testid="stPlotlyChart"] .g-ytitle text {
+    fill: #8d93a4 !important;
+}
+/* Legend text */
+[data-testid="stPlotlyChart"] .legendtext {
+    fill: #eef1f7 !important;
+}
+/* Grid lines */
+[data-testid="stPlotlyChart"] .gridlayer path {
+    stroke: #363a4b !important;
+}
+/* Hover label */
+[data-testid="stPlotlyChart"] .hoverlayer .bg {
+    fill: rgba(42,45,62,0.96) !important;
+}
+[data-testid="stPlotlyChart"] .hoverlayer text {
+    fill: #eef1f7 !important;
+}
+
+/* --- Main content area background --- */
+[data-testid="stMain"] {
+    background-color: #1b1d2a !important;
+}
+[data-testid="stAppViewContainer"] {
+    background: var(--iw-app-bg) !important;
+}
+
+/* --- Sidebar dark --- */
+[data-testid="stSidebar"] {
+    background-color: #0A1261 !important;
+}
+
+/* --- Multiselect / selectbox / pills dark --- */
+[data-testid="stMain"] [data-baseweb="select"] > div {
+    background-color: rgba(42,45,62,0.95) !important;
+    border-color: rgba(167,194,255,0.18) !important;
+    color: #eef1f7 !important;
+}
+[data-testid="stMain"] [data-baseweb="tag"] {
+    background-color: rgba(59,130,246,0.25) !important;
+    color: #a7c2ff !important;
+}
+[data-testid="stMain"] [data-testid="stWidgetLabel"] p {
+    color: #8d93a4 !important;
+}
+/* --- Toggle switch label --- */
+[data-testid="stMain"] [data-testid="stToggle"] label p,
+[data-testid="stMain"] [data-testid="stToggle"] span {
+    color: #eef1f7 !important;
+}

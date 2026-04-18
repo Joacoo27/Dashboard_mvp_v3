@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import html
 import pandas as pd
-from core.charts import chart_config, get_template
+from core.charts import chart_config, get_template, render_chart
 from .logic import get_comercial_kpis, build_commercial_trends
 from .ui_helpers import render_header, render_metric_card, render_info_capsule
 
@@ -101,7 +101,7 @@ def render(df):
             xaxis=dict(showgrid=False),
             yaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
         )
-        st.plotly_chart(fig, use_container_width=True, theme=None, config=chart_config())
+        render_chart(fig, use_container_width=True, theme=None, config=chart_config())
 
     # Sección Inferior: Análisis por Dimensión
     st.markdown("<br>", unsafe_allow_html=True)
@@ -119,7 +119,7 @@ def render(df):
             orientation='h', marker_color='#1e293b'
         ))
         fig_cat.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template=get_template())
-        st.plotly_chart(fig_cat, use_container_width=True, theme=None, config=chart_config())
+        render_chart(fig_cat, use_container_width=True, theme=None, config=chart_config())
 
     with r_col:
         render_info_capsule(
@@ -133,4 +133,4 @@ def render(df):
             orientation='h', marker_color='#2bb673'
         ))
         fig_vend.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), template=get_template())
-        st.plotly_chart(fig_vend, use_container_width=True, theme=None, config=chart_config())
+        render_chart(fig_vend, use_container_width=True, theme=None, config=chart_config())

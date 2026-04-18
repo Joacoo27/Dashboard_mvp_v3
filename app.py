@@ -21,6 +21,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Inicializar antes de cualquier widget para que inject_theme y el toggle
+# lean el mismo valor desde el primer render.
+if "iw_dark_mode" not in st.session_state:
+    st.session_state["iw_dark_mode"] = False
+
 inject_theme()
 core.charts.apply_default_template()
 

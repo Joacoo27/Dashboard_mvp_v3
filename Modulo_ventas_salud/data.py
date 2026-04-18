@@ -1,6 +1,7 @@
 import pandas as pd
 import psycopg2
 import os
+import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -46,6 +47,7 @@ def get_connection():
         return conn
     except: return None
 
+@st.cache_resource
 def get_sqlalchemy_engine():
     config = get_db_config()
     try:
@@ -73,6 +75,7 @@ def load_advanced_stock_data():
         return pd.read_parquet(STOCK_PARQUET)
     return pd.DataFrame()
 
+@st.cache_data(show_spinner=False)
 def load_historical_metrics():
     """Solo lectura desde Parquet para Dashboard"""
     if EVOLUTIVO_PARQUET.exists():

@@ -1,6 +1,7 @@
 """Plotly template for Interwins. Import this module once at app startup."""
 import plotly.graph_objects as go
 import plotly.io as pio
+import streamlit as st
 
 _NAVY   = "#0A1261"
 _ACCENT = "#3b82f6"
@@ -65,13 +66,39 @@ pio.templates["interwins_dark"] = go.layout.Template(
 )
 
 
-def get_template(dark: bool = False) -> str:
+def get_template(dark: bool | None = None) -> str:
+    if dark is None:
+        dark = st.session_state.get("iw_dark_mode", False)
     return "interwins_dark" if dark else "interwins"
 
 
-def apply_default_template(dark: bool = False) -> None:
+def apply_default_template(dark: bool | None = None) -> None:
+    if dark is None:
+        dark = st.session_state.get("iw_dark_mode", False)
     pio.templates.default = get_template(dark)
 
 
 def chart_config(**overrides) -> dict:
     return {**DEFAULT_CHART_CONFIG, **overrides}
+
+
+def render_chart(fig: go.Figure, **kwargs) -> None:
+    """st.plotly_chart wrapper — applies dark/light theme directly to the figure."""
+    is_dark = st.session_state.get("iw_dark_mode", False)
+    if is_dark:
+        fig.update_layout(
+            paper_bgcolor="rgba(27,29,42,0)",
+            plot_bgcolor="rgba(27,29,42,0)",
+            font=dict(color="#eef1f7"),
+            legend=dict(font=dict(color="#eef1f7"), bgcolor="rgba(27,29,42,0.9)", bordercolor="#363a4b"),
+        )
+        fig.update_xaxes(tickfont=dict(color="#8d93a4"), gridcolor="#363a4b", zerolinecolor="#363a4b")
+        fig.update_yaxes(tickfont=dict(color="#8d93a4"), gridcolor="#363a4b", zerolinecolor="#363a4b")
+        if any(getattr(t, "type", None) == "indicator" for t in fig.data):
+            fig.update_traces(
+                selector=dict(type="indicator"),
+                number_font_color="#eef1f7",
+                gauge_bgcolor="rgba(42,45,62,0.9)",
+                gauge_bordercolor="#363a4b",
+            )
+    st.plotly_chart(fig, **kwargs)

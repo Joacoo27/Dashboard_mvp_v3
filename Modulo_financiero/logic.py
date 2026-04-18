@@ -4,12 +4,7 @@ from typing import Optional, Union, Any
 import pandas as pd
 
 
-DIMENSION_FILTERS = {
-    "centro_costo": "centros_costo",
-    "Nivel_2_CC": "niveles_2_cc",
-    "Nivel_3_CC": "niveles_3_cc",
-    "Nombre_Proyecto": "proyectos",
-}
+DIMENSION_FILTERS: dict[str, str] = {}
 
 MONTH_NAMES = {
     1: "ENERO",
@@ -153,9 +148,9 @@ def _prepare_contable(df: pd.DataFrame) -> pd.DataFrame:
     
     # Fix PostgreSQL lowercasing issues by mapping expected mixed-case strings
     expected_cols = [
-        "Estado_Financiero", "pcdesc_1_Modificado", "pcdesc_2", "pcdesc_3_Modificado", 
-        "pcdesc_4", "pcdesc_1", "pcdesc_3", "Nivel_1_IFRS", "Nivel_2_IFRS", "Nivel_3_IFRS", 
-        "Nivel_3_CC", "Nivel_2_CC", "Nombre_Proyecto", "PPTO", "saldo"
+        "Estado_Financiero", "pcdesc_1_Modificado", "pcdesc_2", "pcdesc_3_Modificado",
+        "pcdesc_4", "pcdesc_1", "pcdesc_3", "Nivel_1_IFRS", "Nivel_2_IFRS", "Nivel_3_IFRS",
+        "PPTO", "saldo",
     ]
     renames = {}
     for actual_col in prepared.columns:
@@ -737,23 +732,30 @@ def build_glosas_summary(df: pd.DataFrame) -> dict[str, object]:
             "total_registros": 0,
             "movimiento_debe": 0.0,
             "movimiento_haber": 0.0,
-            "top_usuarios": pd.DataFrame(columns=["Usuario", "Registros"]),
+            "top_cuentas": pd.DataFrame(columns=["Cuenta", "Registros", "Glosas"]),
         }
 
-    top_usuarios = (
-        df.groupby("usuario")
-        .size()
-        .reset_index(name="Registros")
-        .rename(columns={"usuario": "Usuario"})
+    total = int(df["Cantidad_Registros_Contables"].sum()) if "Cantidad_Registros_Contables" in df.columns else len(df)
+    debe  = float(df["debe"].sum())  if "debe"  in df.columns else 0.0
+    haber = float(df["haber"].sum()) if "haber" in df.columns else 0.0
+
+    top_cuentas = (
+        df.groupby("cuenta_contable")
+        .agg(
+            Registros=("Cantidad_Registros_Contables", "sum"),
+            Glosas=("Cantidad_Glosas", "sum"),
+        )
+        .reset_index()
+        .rename(columns={"cuenta_contable": "Cuenta"})
         .sort_values("Registros", ascending=False)
-        .head(5)
+        .head(10)
     )
 
     return {
-        "total_registros": int(len(df)),
-        "movimiento_debe": float(df["movdebe"].sum()),
-        "movimiento_haber": float(df["movhaber"].sum()),
-        "top_usuarios": top_usuarios,
+        "total_registros": total,
+        "movimiento_debe": debe,
+        "movimiento_haber": haber,
+        "top_cuentas": top_cuentas,
     }
 
 def format_currency(value: float, decimals: int = 1) -> str:

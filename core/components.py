@@ -19,7 +19,6 @@ _CSS_TPL = """\
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{overflow:hidden;background:#fcfbf7;
   font-family:'Inter',system-ui,-apple-system,sans-serif}
-/* shared text classes */
 .ti{color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:1.1px;line-height:1.3;width:100%}
 .va{color:#14233b;font-size:clamp(1.55rem,3.5vw,2.1rem);font-weight:800;
@@ -31,7 +30,6 @@ html,body{overflow:hidden;background:#fcfbf7;
   background:rgba(10,18,97,.08);border:1px solid rgba(10,18,97,.18);
   color:#0A1261;font-size:10px;font-weight:800;
   display:flex;align-items:center;justify-content:center;pointer-events:none}
-/* simple card */
 .card{position:relative;height:CARD_H;border-radius:14px;padding:14px 14px;
   display:flex;flex-direction:column;justify-content:center;align-items:center;
   text-align:center;gap:4px;border:1px solid rgba(20,35,59,.08);
@@ -39,7 +37,6 @@ html,body{overflow:hidden;background:#fcfbf7;
   transition:box-shadow .25s,border-color .25s}
 .card:hover{box-shadow:0 14px 40px rgba(10,18,97,.12);
   border-color:rgba(59,130,246,.28)}
-/* flip card */
 .fw{perspective:1200px;height:CARD_H;cursor:pointer}
 .fi{position:relative;width:100%;height:100%;
   transition:transform .55s cubic-bezier(.4,.2,.2,1);
@@ -56,6 +53,50 @@ html,body{overflow:hidden;background:#fcfbf7;
   border-color:rgba(59,130,246,.28)}
 .bk{background:#0A1261;color:#fff;transform:rotateY(180deg);
   border:1px solid rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(10,18,97,.2)}
+.bk .ti{color:#60a5fa}
+.bk .va{font-size:13px;line-height:1.45;font-weight:500;
+  color:rgba(255,255,255,.9)}
+.bk .hi{color:rgba(255,255,255,.5)}
+"""
+
+_CSS_DARK = """\
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow:hidden;background:#1b1d2a;
+  font-family:'Inter',system-ui,-apple-system,sans-serif}
+.ti{color:#8d93a4;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.1px;line-height:1.3;width:100%}
+.va{color:#eef1f7;font-size:clamp(1.55rem,3.5vw,2.1rem);font-weight:800;
+  letter-spacing:-.01em;line-height:1.05;font-variant-numeric:tabular-nums;width:100%}
+.de{font-size:12.5px;font-weight:700;width:100%}
+.me{color:#6c7283;font-size:12px;font-weight:600;width:100%}
+.hi{color:#6c7283;font-size:10px;font-weight:600;margin-top:2px;width:100%}
+.ik{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;
+  background:rgba(167,194,255,.10);border:1px solid rgba(167,194,255,.22);
+  color:#a7c2ff;font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;pointer-events:none}
+.card{position:relative;height:CARD_H;border-radius:14px;padding:14px 14px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;gap:4px;border:1px solid rgba(167,194,255,.08);
+  box-shadow:0 8px 32px rgba(0,0,0,.35);background:rgba(42,45,62,0.92);
+  transition:box-shadow .25s,border-color .25s}
+.card:hover{box-shadow:0 14px 40px rgba(0,0,0,.45);
+  border-color:rgba(122,168,255,.22)}
+.fw{perspective:1200px;height:CARD_H;cursor:pointer}
+.fi{position:relative;width:100%;height:100%;
+  transition:transform .55s cubic-bezier(.4,.2,.2,1);
+  transform-style:preserve-3d}
+.fw.on .fi{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;-webkit-backface-visibility:hidden;
+  backface-visibility:hidden;border-radius:16px;padding:20px 18px;
+  display:flex;flex-direction:column;justify-content:center;
+  align-items:center;text-align:center;gap:5px}
+.fr{background:rgba(42,45,62,0.92);border:1px solid rgba(167,194,255,.08);
+  box-shadow:0 8px 32px rgba(0,0,0,.35);
+  transition:box-shadow .25s,border-color .25s}
+.fr:hover{box-shadow:0 14px 40px rgba(0,0,0,.45);
+  border-color:rgba(122,168,255,.22)}
+.bk{background:#0d1545;color:#fff;transform:rotateY(180deg);
+  border:1px solid rgba(122,168,255,.15);box-shadow:0 8px 32px rgba(0,0,0,.45)}
 .bk .ti{color:#60a5fa}
 .bk .va{font-size:13px;line-height:1.45;font-weight:500;
   color:rgba(255,255,255,.9)}
@@ -140,7 +181,8 @@ def render_metric_card(
         )
 
     ik_html = '<div class="ik">i</div>' if (desc or tooltip) else ""
-    css = _CSS_TPL.replace("CARD_H", f"{height}px")
+    is_dark = st.session_state.get("iw_dark_mode", False)
+    css = (_CSS_DARK if is_dark else _CSS_TPL).replace("CARD_H", f"{height}px")
 
     if desc:
         html_out = _FLIP_HTML.format(
@@ -282,15 +324,29 @@ def render_top_nav(module, active_tab) -> str | None:
     return selected_tab
 
 
-def render_mode_indicator(label: str = "MODO CLARO") -> None:
+def render_mode_indicator() -> None:
+    is_dark = st.session_state.get("iw_dark_mode", False)
+    label = "MODO OSCURO" if is_dark else "MODO CLARO"
     st.markdown(
-        (
-            '<div class="iw-mode-indicator">'
-            f'<span class="iw-mode-label">{_html.escape(label)}</span>'
-            '<span class="iw-mode-pill"><span class="iw-mode-knob"></span></span>'
-            '</div>'
-        ),
+        f'<div class="iw-mode-indicator">'
+        f'<span class="iw-mode-label">{label}</span>'
+        f'</div>',
         unsafe_allow_html=True,
+    )
+
+    def _sync_dark_mode():
+        # Actualiza la variable de estado persistente desde el widget
+        st.session_state["iw_dark_mode"] = st.session_state.get("_iw_dark_toggle", False)
+
+    # El key del widget (_iw_dark_toggle) es distinto del estado real (iw_dark_mode).
+    # Streamlit puede limpiar el key del widget cuando no se renderiza (navegación),
+    # pero iw_dark_mode es una variable plana que nunca se limpia automáticamente.
+    st.toggle(
+        "Modo oscuro",
+        value=is_dark,
+        key="_iw_dark_toggle",
+        on_change=_sync_dark_mode,
+        label_visibility="collapsed",
     )
 
 

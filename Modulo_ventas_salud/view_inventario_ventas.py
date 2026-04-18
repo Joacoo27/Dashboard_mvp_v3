@@ -3,13 +3,14 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from core.charts import chart_config, get_template
+from core.charts import chart_config, get_template, render_chart
 from core.components import render_header, render_info_capsule, render_kicker, render_metric_card
 
 from .data import load_advanced_stock_data, load_historical_metrics
 from .logic import calculate_advanced_inventory_metrics, get_kpis
 
 
+@st.cache_data(show_spinner=False)
 def load_and_calculate(policy_months: int = 3) -> pd.DataFrame:
     df_inv = load_advanced_stock_data()
     if df_inv.empty:
@@ -263,7 +264,7 @@ def render(context: dict) -> None:
             "Seguimiento mensual de ventas con una referencia de tendencia móvil para lectura ejecutiva.",
             "Barras de venta real y línea punteada de promedio móvil de 6 meses.",
         )
-        st.plotly_chart(
+        render_chart(
             get_trend_figure(sales_df, metric="venta", label="Ingreso Real"),
             use_container_width=True,
             theme=None,
@@ -275,7 +276,7 @@ def render(context: dict) -> None:
             "Descompone el mix total de SKUs y muestra cuánto se pierde por sobrestock, quiebres y baja rotación.",
             "Gráfico de cascada con SKUs problemáticos y bloque final saludable.",
         )
-        st.plotly_chart(
+        render_chart(
             get_waterfall_figure(inventory_df),
             use_container_width=True,
             theme=None,
@@ -292,4 +293,4 @@ def render(context: dict) -> None:
     if stock_evo is None:
         st.info("No hay datos históricos de stock disponibles.")
     else:
-        st.plotly_chart(stock_evo, use_container_width=True, theme=None, config=chart_config())
+        render_chart(stock_evo, use_container_width=True, theme=None, config=chart_config())

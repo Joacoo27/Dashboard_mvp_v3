@@ -3,7 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from core.charts import chart_config, get_template
+from core.charts import chart_config, get_template, render_chart
 from core.components import render_header, render_info_capsule
 
 from .data import load_advanced_stock_data, load_historical_metrics
@@ -12,6 +12,13 @@ from .logic import calculate_advanced_inventory_metrics, calculate_evolutionary_
 
 def render(context: dict | None = None) -> None:
     context = context or {}
+    is_dark = st.session_state.get("iw_dark_mode", False)
+    _card_bg     = "rgba(42,45,62,0.92)" if is_dark else "white"
+    _card_border = "rgba(167,194,255,0.08)" if is_dark else "rgba(0,0,0,0.05)"
+    _text_ink    = "#eef1f7" if is_dark else "#1e293b"
+    _text_slate  = "#8d93a4" if is_dark else "#64748b"
+    _text_mid    = "#a4aab9" if is_dark else "#334155"
+    _insight_bg  = "rgba(42,45,62,0.92)" if is_dark else "#f8fafc"
 
     render_header(
         "Índice de Salud Master",
@@ -64,7 +71,7 @@ def render(context: dict | None = None) -> None:
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
-        st.plotly_chart(fig_gauge, use_container_width=True, theme=None, config=chart_config())
+        render_chart(fig_gauge, use_container_width=True, theme=None, config=chart_config())
 
     with right_col:
         render_info_capsule(
@@ -81,9 +88,9 @@ def render(context: dict | None = None) -> None:
                 color = "#22c55e" if val_pct >= 80 else "#f97316" if val_pct >= 50 else "#ef4444"
                 st.markdown(
                     f"""
-                    <div style="background:white;padding:16px;border-radius:16px;border:1px solid rgba(0,0,0,0.05);box-shadow:0 4px 12px rgba(0,0,0,0.02);height:100%;">
-                        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px;letter-spacing:.05em;">{row["Dimensión"]}</div>
-                        <div style="font-size:22px;font-weight:900;color:#1e293b;margin-bottom:4px;">{val_pct:.1f}%</div>
+                    <div style="background:{_card_bg};padding:16px;border-radius:16px;border:1px solid {_card_border};box-shadow:0 4px 12px rgba(0,0,0,0.02);height:100%;">
+                        <div style="font-size:11px;font-weight:700;color:{_text_slate};text-transform:uppercase;margin-bottom:8px;letter-spacing:.05em;">{row["Dimensión"]}</div>
+                        <div style="font-size:22px;font-weight:900;color:{_text_ink};margin-bottom:4px;">{val_pct:.1f}%</div>
                         <div style="font-size:12px;font-weight:700;color:{color};">+{contrib:.1f} pts</div>
                     </div>
                     """,
@@ -99,9 +106,9 @@ def render(context: dict | None = None) -> None:
             weakest_dim = details_df.loc[details_df["Valor Real (%)"].idxmin(), "Dimensión"]
             st.markdown(
                 f"""
-                <div style="background:#f8fafc;padding:18px;border-radius:16px;border-left:4px solid #3b82f6;margin-top:18px;">
+                <div style="background:{_insight_bg};padding:18px;border-radius:16px;border-left:4px solid #3b82f6;margin-top:18px;">
                     <div style="font-size:11px;font-weight:800;color:#3b82f6;text-transform:uppercase;margin-bottom:4px;">Insight Estratégico</div>
-                    <div style="font-size:14px;color:#334155;line-height:1.45;">
+                    <div style="font-size:14px;color:{_text_mid};line-height:1.45;">
                         El <b>Nivel de Servicio</b> proyecta una tendencia <b>{trend_status}</b> ({abs(trend_3m):.1f}%).
                         La prioridad operativa hoy está en <b>{weakest_dim}</b> para elevar el score global.
                     </div>
@@ -149,9 +156,9 @@ def render(context: dict | None = None) -> None:
         label_stat = "BAJO OBJETIVO" if curr_val < 85 else "EN META"
         st.markdown(
             f"""
-            <div style="text-align:right;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.02);height:100%;display:flex;flex-direction:column;justify-content:center;">
-                <div style="font-size:13px;font-weight:700;color:#94a3b8;letter-spacing:.05em;margin-bottom:5px;">{main_dim.upper()}</div>
-                <div style="font-size:48px;font-weight:900;color:#0A1261;line-height:1;">{curr_val:.1f}%</div>
+            <div style="text-align:right;background:{_card_bg};padding:25px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.03);border:1px solid {_card_border};height:100%;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:13px;font-weight:700;color:{_text_slate};letter-spacing:.05em;margin-bottom:5px;">{main_dim.upper()}</div>
+                <div style="font-size:48px;font-weight:900;color:{'#a7c2ff' if is_dark else '#0A1261'};line-height:1;">{curr_val:.1f}%</div>
                 <div style="margin-top:15px;">
                     <span style="background:{color_stat}15;color:{color_stat};padding:4px 10px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid {color_stat}30;">{label_stat}</span>
                 </div>
@@ -214,7 +221,7 @@ def render(context: dict | None = None) -> None:
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
-        st.plotly_chart(fig_hero, use_container_width=True, theme=None, config=chart_config())
+        render_chart(fig_hero, use_container_width=True, theme=None, config=chart_config())
 
     st.markdown('<div style="margin-top:30px;margin-bottom:20px;font-size:16px;font-weight:800;color:#1e293b;letter-spacing:-0.02em;">Diagnóstico Operativo de Salud</div>', unsafe_allow_html=True)
     dims_support = [column for column in df_evo.columns if column not in ["mes", "mes_label", main_dim]]
@@ -229,10 +236,10 @@ def render(context: dict | None = None) -> None:
 
             st.markdown(
                 f"""
-                <div style="background:white;padding:20px;border-radius:18px;box-shadow:0 4px 20px rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.03);margin-bottom:10px;">
-                    <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px;">{dim.upper()}</div>
+                <div style="background:{_card_bg};padding:20px;border-radius:18px;box-shadow:0 4px 20px rgba(0,0,0,0.02);border:1px solid {_card_border};margin-bottom:10px;">
+                    <div style="font-size:12px;font-weight:700;color:{_text_slate};margin-bottom:5px;">{dim.upper()}</div>
                     <div style="display:flex;align-items:baseline;gap:8px;">
-                        <span style="font-size:24px;font-weight:900;color:#1e293b;">{curr_dim:.1f}%</span>
+                        <span style="font-size:24px;font-weight:900;color:{_text_ink};">{curr_dim:.1f}%</span>
                         <span style="font-size:10px;font-weight:800;color:{status_color};text-transform:uppercase;">● {status_label}</span>
                     </div>
                     <div style="margin-top:15px;"></div>
@@ -252,4 +259,4 @@ def render(context: dict | None = None) -> None:
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
-            st.plotly_chart(fig_spark, use_container_width=True, theme=None, config=chart_config())
+            render_chart(fig_spark, use_container_width=True, theme=None, config=chart_config())
