@@ -11,6 +11,7 @@ from .view_eerr import render as render_eerr
 from .view_resumen import render as render_resumen
 
 
+
 @st.cache_data(show_spinner=False)
 def _load_financial_context() -> dict:
     return load_all_data()
@@ -37,7 +38,7 @@ def render_sidebar(context: dict) -> dict:
     else:
         st.sidebar.caption("Sin caché — usando datos demo")
 
-    if st.sidebar.button("Actualizar Parquet Financiero", key="fin_refresh", use_container_width=True):
+    if st.sidebar.button("Actualizar Parquet Financiero", key="fin_refresh", width="stretch"):
         try:
             with st.spinner("Sincronizando con base de datos..."):
                 import Modulo_financiero.consolidar_parquets as consolidar
@@ -65,6 +66,8 @@ def get_module() -> ModuleSpec:
             TabSpec("eerr", "Estado de Resultados", render_eerr, "📑"),
             TabSpec("balance", "Balance", render_balance, "⚖️"),
         ],
+
+
         load_context=load_context,
         render_sidebar=render_sidebar,
         default_tab="resumen_fin",

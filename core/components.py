@@ -274,6 +274,33 @@ def render_sidebar_divider() -> None:
     st.sidebar.markdown('<div class="iw-sidebar-divider"></div>', unsafe_allow_html=True)
 
 
+def render_sidebar_mode_toggle() -> str:
+    if "iw_sidebar_mode" not in st.session_state:
+        st.session_state["iw_sidebar_mode"] = "navigation"
+
+    cols = st.sidebar.columns(2)
+    with cols[0]:
+        if st.button(
+            "🧭 Navegar", 
+            key="iw_side_mode_nav",
+            width="stretch",
+            type="primary" if st.session_state["iw_sidebar_mode"] == "navigation" else "secondary",
+        ):
+            st.session_state["iw_sidebar_mode"] = "navigation"
+            st.rerun()
+    with cols[1]:
+        if st.button(
+            "💬 Chat",
+            key="iw_side_mode_chat",
+            width="stretch",
+            type="primary" if st.session_state["iw_sidebar_mode"] == "chat" else "secondary",
+        ):
+            st.session_state["iw_sidebar_mode"] = "chat"
+            st.rerun()
+
+    return st.session_state["iw_sidebar_mode"]
+
+
 def render_module_nav(modules: dict[str, object], active_key: str) -> str:
     keys = list(modules.keys())
     selected = st.sidebar.radio(
