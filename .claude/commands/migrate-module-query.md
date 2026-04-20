@@ -350,6 +350,133 @@ Marca como `[x]` los que ya están resueltos y `[ ]` los que quedan pendientes.
 
 ---
 
+## HOMOLOGACIÓN DE QUERIES
+
+Toda query integrada al proyecto **debe** tener una versión homologada en la
+carpeta `queries_homologadas/<modulo>/`. La versión homologada es el contrato
+portable entre clientes: al replicar el proyecto para otro cliente, sólo
+cambian las CTEs superiores (fuentes y reglas propias del cliente), mientras
+que el `SELECT` final conserva exactamente los nombres y tipos del contrato
+del módulo.
+
+Ejecuta este paso **siempre** después de completar la migración de datos y
+antes de la verificación de Assets. Es obligatorio tanto para queries nuevas
+como para reemplazos.
+
+---
+
+### Estructura de `queries_homologadas/`
+
+```
+queries_homologadas/
+├── README.md                  ← índice módulo → parquet → query + política de nulos
+├── <modulo_1>/
+│   └── <nombre_fuente>.sql
+└── <modulo_2>/
+    └── <nombre_fuente>.sql
+```
+
+Si la carpeta o su `README.md` no existen, créalos antes de generar la
+primera query homologada del proyecto.
+
+---
+
+### Requisitos de cada query homologada
+
+**1. Encabezado con metadata del módulo** (comentarios SQL al inicio del archivo):
+
+```sql
+-- =============================================================================
+-- QUERY HOMOLOGADA — <Nombre del Módulo>
+-- -----------------------------------------------------------------------------
+-- Modulo        : <carpeta del módulo>
+-- Parquet       : <ruta relativa al parquet que alimenta>
+-- Consumidores  : <archivos .py que leen el parquet>
+-- Origen actual : <ruta del .sql del cliente>
+-- Grano final   : <descripción del grano de la tabla resultante>
+-- =============================================================================
+```
+
+**2. CTEs cliente-específicas marcadas**: cualquier CTE que aplique reglas
+propias del cliente (filtros, normalizaciones, overrides de SKU, homologación
+de maestro) debe llevar un comentario `-- [CLIENTE-ESPECIFICO] <por qué cambia>`
+para que el próximo cliente sepa exactamente dónde intervenir.
+
+**3. SELECT final marcado como contrato [ESTANDAR]**:
+
+```sql
+-- =============================================================================
+-- CONTRATO FINAL — [ESTANDAR]
+-- -----------------------------------------------------------------------------
+-- <resumen breve de la política de nulos aplicable al contrato>
+--
+-- Columnas obligatorias en nombre/tipo (valor nullable):
+--   <col1>     <tipo>   -- <descripción>
+--   ...
+-- =============================================================================
+SELECT ... FROM ...;
+```
+
+El `SELECT` final debe:
+
+- Usar **exactamente** los nombres y tipos definidos en
+  "REQUISITOS MÍNIMOS DE DATOS POR MÓDULO" para el módulo correspondiente.
+- Agrupar columnas por sección semántica (Tiempo, Tienda, Vendedor, Documento,
+  Cliente, Producto, Métricas, Trazabilidad, etc.) con comentarios
+  `-- [ESTANDAR] <Sección>`.
+- Aplicar **casts explícitos** (`::text`, `::numeric`, `::date`, `::int`,
+  `::timestamp`).
+- **No forzar fillers** (`'Sin X'`, `'Nulo'`, `0`): todas las columnas del
+  contrato son NULLABLE. Si un campo no aplica al cliente o no existe en la
+  fuente, se propaga como `NULL`. Excepciones permitidas:
+  - Columnas derivadas deterministicamente
+    (ej: `monto_margen = monto_real − monto_costo`).
+  - `COALESCE` entre dos columnas alternativas reales
+    (ej: `COALESCE(p.tipo_p, s.tipo_producto)`) — eso es fallback entre
+    fuentes, no literal de relleno.
+
+---
+
+### Actualizar `queries_homologadas/README.md`
+
+Al crear/modificar una query homologada, actualizar el README:
+- Agregar o ajustar la fila del **índice módulo → parquet → query**.
+- Actualizar la tabla de contrato del módulo si cambiaron columnas.
+- Mantener la sección "Política de nulos" como declaración transversal.
+
+---
+
+### Checklist de homologación
+
+Ejecuta este checklist y muéstralo al usuario al terminar:
+
+```
+📋 Homologación de query — estado:
+
+  [ ] Archivo en queries_homologadas/<modulo>/<nombre>.sql
+  [ ] Encabezado con Modulo + Parquet + Consumidores + Origen + Grano
+  [ ] CTEs client-specific marcadas con [CLIENTE-ESPECIFICO]
+  [ ] SELECT final marcado como CONTRATO FINAL — [ESTANDAR]
+  [ ] Columnas del contrato coinciden con REQUISITOS MÍNIMOS del módulo
+  [ ] Casts explícitos (::text, ::numeric, ::date, ::int, ::timestamp)
+  [ ] Sin fillers ('Sin X', 'Nulo', 0) salvo derivaciones o fallbacks reales
+  [ ] queries_homologadas/README.md actualizado
+```
+
+Marca como `[x]` los items resueltos y `[ ]` los que quedan pendientes.
+
+---
+
+### FASE -1 — CLONACIÓN DE PROYECTO (OPCIONAL)
+
+Si el usuario indica que quiere levantar un cliente nuevo y estamos trabajando sobre el directorio "Plantilla" (ej: `MVP_V3_Indura` o `Motor_V3`), el skill debe:
+
+1. **Sugerir/Realizar la clonación**: Crear una copia completa del directorio actual en una nueva carpeta llamada `MVP_V3_<CLIENTE_NOMBRE>` (dentro del mismo directorio padre).
+2. **Cambiar de contexto**: Notificar al usuario que de ahora en adelante se trabajará en la nueva carpeta.
+3. **Continuar con FASE 0** en el nuevo directorio.
+
+---
+
 ## FASE 0 — DETECCIÓN DE PROYECTO NUEVO (ejecutar siempre primero)
 
 Antes de cualquier otra acción, evalúa si el repositorio se encuentra en estado de
@@ -441,6 +568,10 @@ En ambos casos necesito que me proporciones la query SQL correspondiente.
 Guarda la respuesta como `VENTAS_FUENTE`:
 - `"transaccional"` si el usuario elige opción A
 - `"alternativa"` + descripción breve si elige opción B
+
+Si se activó FASE -1:
+- Procede a copiar el directorio actual a `../MVP_V3_<CLIENTE_NOMBRE>`.
+- Informa al usuario: "He creado la carpeta `MVP_V3_<CLIENTE_NOMBRE>` para trabajar de forma independiente".
 
 Usa `VENTAS_FUENTE` en F0.2 para nombrar el archivo sugerido:
 - `"transaccional"` → sugiere `ventas.sql` con la nota `← query transaccional del ERP`
@@ -535,9 +666,11 @@ Muestra los comandos exactos según `MODULOS_ACTIVOS`, usando `CLIENTE_NOMBRE`
 para dar contexto. Actualiza también `app.py` con el nombre y las iniciales
 derivadas ya conocidas (no esperes a que el usuario lo pida — hazlo ahora):
 
-**Actualizar branding en `app.py`** (con los datos de F0.0):
+**Actualizar branding y modularidad en `app.py`** (con los datos de F0.0):
 - `page_title` → `"Panel de <CLIENTE_NOMBRE>"`
 - `render_sidebar_brand(title="<CLIENTE_NOMBRE>", fallback_initials="<iniciales>")`
+- **Modularidad**: Reescribir la lista `MODULE_PACKAGES` para incluir solo las carpetas de los `MODULOS_ACTIVOS`.
+  - Ejemplo si solo eligió Comercial: `MODULE_PACKAGES = ["Modulo_comercial"]`
 - Si aún no se tiene logo → deja `_resolve_logo_asset()` sin cambios y
   anota `# TODO: agregar assets/logo_mark.svg con el logo de <CLIENTE_NOMBRE>`
 
@@ -704,6 +837,25 @@ Espera respuesta del usuario antes de continuar si hay fuentes ❌ o ⚠️ obli
 Si el usuario confirma continuar con fuentes faltantes, agrega un `# TODO` visible
 en `consolidar_parquets.py` indicando qué falta.
 
+### 1g — Inventariar queries homologadas existentes
+
+Verifica si existe `queries_homologadas/` en la raíz. Si existe, lista los
+archivos `.sql` homologados presentes para el módulo en cuestión:
+
+```
+Queries homologadas del módulo <nombre>:
+  - queries_homologadas/<modulo>/<nombre_fuente_1>.sql
+  - queries_homologadas/<modulo>/<nombre_fuente_2>.sql
+  (ninguna → se crearán al final de la migración)
+```
+
+Usa esta información para decidir, en el paso de homologación posterior:
+- Si la fuente ya tiene archivo homologado → **actualizar** (reemplazo).
+- Si no existe → **crear** desde cero.
+
+Si `queries_homologadas/` no existe, anótalo para crearla junto con su
+`README.md` durante la homologación.
+
 ---
 
 ## ═══════════════════════════════════════════════
@@ -787,12 +939,25 @@ Lee los archivos `view_*.py` del módulo. Busca hardcodes de columnas eliminadas
 - Si hay columna equivalente en `agregadas` → reemplaza
 - Si no → comenta con `# MIGRACIÓN: columna '<nombre>' eliminada — revisar lógica`
 
-### A7 — Assets del cliente
+### A7 — Generar query homologada
+
+Ejecuta los pasos de la sección **HOMOLOGACIÓN DE QUERIES**:
+
+- Crear/actualizar el archivo
+  `queries_homologadas/<modulo>/<nombre_fuente>.sql`.
+- Aplicar el encabezado con `Modulo`, `Parquet`, `Consumidores`, `Origen actual`, `Grano final`.
+- Marcar las CTEs cliente-específicas con `-- [CLIENTE-ESPECIFICO]`.
+- Reestructurar el SELECT final como `CONTRATO FINAL — [ESTANDAR]`, con
+  casts explícitos, agrupación por secciones y **sin fillers**.
+- Actualizar `queries_homologadas/README.md` (índice y contrato del módulo).
+- Mostrar el checklist de homologación al usuario.
+
+### A8 — Assets del cliente
 
 Ejecuta los pasos de la sección **ASSETS Y BRANDING DEL CLIENTE** al final de este skill
 y muestra el checklist de estado al usuario.
 
-### A8 — Resumen Ruta A
+### A9 — Resumen Ruta A
 
 ```
 ✅ Migración completada — módulo <nombre>
@@ -803,10 +968,15 @@ Archivos modificados:
 - <modulo>/logic.py
 - <modulo>/__init__.py
 [+ vistas con referencias corregidas]
+- queries_homologadas/<modulo>/<nombre_fuente>.sql
+- queries_homologadas/README.md
 
 Columnas agregadas: [lista o "ninguna"]
 Columnas eliminadas: [lista o "ninguna"]
 [TODOs pendientes si los hay]
+
+📋 Homologación de query:
+[checklist de homologación aquí]
 
 📋 Assets del cliente:
 [checklist de assets aquí]
@@ -925,12 +1095,28 @@ Informa al usuario cómo consumir la nueva fuente:
     Para usarla en una vista: df = context.get("<nombre>", pd.DataFrame())
 ```
 
-### B6 — Assets del cliente
+### B6 — Generar queries homologadas
+
+Ejecuta los pasos de la sección **HOMOLOGACIÓN DE QUERIES** **una vez por cada
+fuente procesada** (tanto reemplazos como fuentes nuevas):
+
+- Crear/actualizar `queries_homologadas/<modulo>/<nombre_fuente>.sql` por cada
+  fuente.
+- Aplicar el encabezado con `Modulo`, `Parquet`, `Consumidores`,
+  `Origen actual`, `Grano final` (una entrada distinta por fuente).
+- Marcar las CTEs cliente-específicas con `-- [CLIENTE-ESPECIFICO]`.
+- Reestructurar cada SELECT final como `CONTRATO FINAL — [ESTANDAR]`, con
+  casts explícitos, agrupación por secciones y **sin fillers**.
+- Actualizar `queries_homologadas/README.md`: una fila del índice por cada
+  fuente nueva y/o actualización del contrato del módulo.
+- Mostrar el checklist de homologación (consolidado para todas las fuentes).
+
+### B7 — Assets del cliente
 
 Ejecuta los pasos de la sección **ASSETS Y BRANDING DEL CLIENTE** al final de este skill
 y muestra el checklist de estado al usuario.
 
-### B7 — Resumen Ruta B
+### B8 — Resumen Ruta B
 
 ```
 ✅ Migración multi-fuente completada — módulo <nombre>
@@ -945,6 +1131,9 @@ Archivos modificados:
 - <modulo>/logic.py
 - <modulo>/__init__.py
 [+ vistas si se modificaron]
+- queries_homologadas/<modulo>/<fuente_1>.sql
+- queries_homologadas/<modulo>/<fuente_2>.sql
+- queries_homologadas/README.md
 
 [TODOs pendientes si los hay]
 
@@ -953,6 +1142,9 @@ o: python -m <carpeta_modulo>.consolidar_parquets
 
 Fuentes nuevas disponibles:
   context["<nombre>"]  →  DataFrame listo para usar en vistas
+
+📋 Homologación de queries:
+[checklist de homologación aquí — una entrada por fuente]
 
 📋 Assets del cliente:
 [checklist de assets aquí]
